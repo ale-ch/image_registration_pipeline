@@ -1,8 +1,4 @@
 import os
-
-# from src.utils.pickle_utils import load_pickle, save_pickle
-# from src.utils.image_mapping import apply_mapping, compute_affine_mapping_cv2, compute_diffeomorphic_mapping_dipy
-
 from utils.pickle_utils import load_pickle, save_pickle
 from utils.image_mapping import apply_mapping, compute_affine_mapping_cv2, compute_diffeomorphic_mapping_dipy
 
@@ -29,6 +25,7 @@ def compute_mappings(fixed_crops, moving_crops, checkpoint_dir):
         if os.path.exists(checkpoint_path):
             # Load mapping from checkpoint if it exists
             mapping_affine, mapping_diffeomorphic = load_pickle(checkpoint_path)
+            print(f"Loaded checkpoint for i={crop[0][0]}_{crop[0][1]}")
         else:
             fixed_crop_dapi = fixed_crops[i][1][:, :, 2]
             mov_crop_dapi = moving_crops[i][1][:, :, 2]
@@ -39,6 +36,7 @@ def compute_mappings(fixed_crops, moving_crops, checkpoint_dir):
             
             # Save the computed mappings
             save_pickle((mapping_affine, mapping_diffeomorphic), checkpoint_path)
+            print(f"Saved checkpoint for i={crop[0][0]}_{crop[0][1]}")
         
         mappings.append((mapping_affine, mapping_diffeomorphic))
     

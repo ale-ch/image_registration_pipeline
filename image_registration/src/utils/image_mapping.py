@@ -89,10 +89,10 @@ def apply_mapping(mapping, x, method='dipy'):
     if method not in ['cv2', 'dipy']:
         raise ValueError("Invalid method specified. Choose either 'cv2' or 'dipy'.")
     
-    if method == 'dipy' and not isinstance(mapping, SymmetricDiffeomorphicRegistration):
-        raise ValueError("Invalid mapping object for DIPY method.")
-    if method == 'cv2' and not isinstance(mapping, np.ndarray):
-        raise ValueError("Invalid mapping object for OpenCV method.")
+    # if method == 'dipy' and not isinstance(mapping, SymmetricDiffeomorphicRegistration):
+    #     raise ValueError("Invalid mapping object for DIPY method.")
+    # if method == 'cv2' and not isinstance(mapping, np.ndarray):
+    #     raise ValueError("Invalid mapping object for OpenCV method.")
     
     if method == 'dipy':
         mapped = mapping.transform(x)

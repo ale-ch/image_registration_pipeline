@@ -1,11 +1,9 @@
 #!/bin/bash
 
-root_dir="/hpcnfs"
-# root_dir="/Volumes"
-
 # Read values from config.ini
-# config_file="${root_dir}/scratch/DIMA/chiodin/repositories/image_registration_pipeline/config.ini"
-config_file="/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/tests/config_local.ini"
+# config_file="/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/tests/config_local.ini"
+# config_file="/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/configs/config_volumes.ini"
+config_file="/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/configs/config_hpcnfs.ini"
 
 get_config_value() {
     local section=$1

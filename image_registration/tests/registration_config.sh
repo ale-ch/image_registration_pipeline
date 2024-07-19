@@ -15,14 +15,14 @@ get_config_value() {
 }
 
 current_dir=$(get_config_value "Paths" "current_dir")
-data_dir=$(get_config_value "Paths" "data_dir")
-output_root_path=$(get_config_value "Paths" "output_root_path")
+input_dir=$(get_config_value "Paths" "input_dir")
+output_dir=$(get_config_value "Paths" "output_dir")
 
 cd "$current_dir"
 
 python "${current_dir}/shared/update_paths.py" \
-    --input-root-path "${data_dir}" \
-    --output-root-path "${output_root_path}" \
+    --input-dir "${input_dir}" \
+    --output-dir "${output_dir}" \
     --logs-dir "$(get_config_value "UpdatePaths" "logs_dir")" \
     --cur-logs-dir "$(get_config_value "UpdatePaths" "cur_logs_dir")" \
     --backup-dir "$(get_config_value "UpdatePaths" "backup_dir")" \
@@ -32,8 +32,8 @@ python "${current_dir}/shared/update_paths.py" \
 
 python "${current_dir}/image_registration/src/register_images.py" \
     --cur-logs-dir "$(get_config_value "RegisterImages" "cur_logs_dir")" \
-    --root-mappings-dir "$(get_config_value "RegisterImages" "root_mappings_dir")" \
-    --root-registered-crops-dir "$(get_config_value "RegisterImages" "root_registered_crops_dir")" \
+    --mappings-dir "$(get_config_value "RegisterImages" "mappings_dir")" \
+    --registered-crops-dir "$(get_config_value "RegisterImages" "registered_crops_dir")" \
     --fixed-image-pattern "$(get_config_value "RegisterImages" "fixed_image_pattern")" \
     --crop-width-x "$(get_config_value "RegisterImages" "crop_width_x")" \
     --crop-width-y "$(get_config_value "RegisterImages" "crop_width_y")" \

@@ -35,7 +35,7 @@ def get_paths_to_process(cur_logs_dir):
 
     return input_paths, output_paths
 
-def register_images(cur_logs_dir, root_mappings_dir, root_registered_crops_dir, fixed_image_pattern,  
+def register_images(cur_logs_dir, mappings_dir, registered_crops_dir, fixed_image_pattern,  
                     crop_width_x, crop_width_y, overlap_factor=0.3, delete_checkpoints=False):
     # Get input and output paths
     input_paths, output_paths = get_paths_to_process(cur_logs_dir)
@@ -52,7 +52,7 @@ def register_images(cur_logs_dir, root_mappings_dir, root_registered_crops_dir, 
         print(f'Output path: {output_path}')
         moving_image = imread(moving_image_path)
 
-        current_mappings_dir, current_registered_crops_dir = create_checkpoint_dirs(root_mappings_dir, root_registered_crops_dir, moving_image_path)
+        current_mappings_dir, current_registered_crops_dir = create_checkpoint_dirs(mappings_dir, registered_crops_dir, moving_image_path)
 
         overlap_x, overlap_y = estimate_overlap(fixed_image, moving_image, overlap_factor=overlap_factor)
         fixed_crops = crop_2d_array_grid(fixed_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
@@ -72,8 +72,8 @@ def register_images(cur_logs_dir, root_mappings_dir, root_registered_crops_dir, 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Register images from input paths and save them to output paths.")
     parser.add_argument('--cur-logs-dir', type=str, help='Path to the directory with the current input and output log files.')
-    parser.add_argument('--root-mappings-dir', type=str, help='Root directory to save mappings.')
-    parser.add_argument('--root-registered-crops-dir', type=str, help='Root directory to save registered crops.')
+    parser.add_argument('--mappings-dir', type=str, help='Root directory to save mappings.')
+    parser.add_argument('--registered-crops-dir', type=str, help='Root directory to save registered crops.')
     parser.add_argument('--fixed-image-pattern', type=str, help='File name pattern identifying the fixed image.')
     parser.add_argument('--crop-width-x', type=int, help='Crop width.')
     parser.add_argument('--crop-width-y', type=int, help='Crop height.')
@@ -82,5 +82,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    register_images(args.cur_logs_dir, args.root_mappings_dir, args.root_registered_crops_dir, args.fixed_image_pattern, \
+    register_images(args.cur_logs_dir, args.mappings_dir, args.registered_crops_dir, args.fixed_image_pattern, \
                     args.crop_width_x, args.crop_width_y, args.overlap_factor, args.delete_checkpoints)

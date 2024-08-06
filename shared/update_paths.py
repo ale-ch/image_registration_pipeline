@@ -131,18 +131,18 @@ def remove_file_extension(filename):
 
 def main(args):
     # Get child directories paths
-    input_imgs_dir_paths = get_directory_paths(args.input_root_path)
-    output_imgs_dir_paths = get_directory_paths(args.output_root_path)
+    input_imgs_dir_paths = get_directory_paths(args.input_dir)
+    output_imgs_dir_paths = get_directory_paths(args.output_dir)
     print(input_imgs_dir_paths, output_imgs_dir_paths)
 
     # Read paths from files
     input_paths_list = read_paths_from_file(os.path.join(args.logs_dir, "input_paths.txt"))
     output_paths_list = read_paths_from_file(os.path.join(args.logs_dir, "output_paths.txt"))
 
-    output_dir_paths_history_list = list(set(['/'.join(path.split('/')[:-1]) for path in output_paths_list]))
+    output_dir_paths_log = list(set(['/'.join(path.split('/')[:-1]) for path in output_paths_list]))
 
     # Check for nonexistent output directories
-    nonexistent_paths = [path for path in output_dir_paths_history_list if path not in output_imgs_dir_paths]
+    nonexistent_paths = [path for path in output_dir_paths_log if path not in output_imgs_dir_paths]
     if nonexistent_paths:
         print("Warning: Missing directories:")
         for path in nonexistent_paths:
@@ -178,9 +178,9 @@ def main(args):
             continue
 
         dir_name = os.path.basename(input_dir_path)
-        output_dir_path_new = os.path.join(args.output_root_path, dir_name)
+        output_dir_path_new = os.path.join(args.output_dir, dir_name)
         
-        if output_dir_path_new not in output_dir_paths_history_list and not os.path.exists(output_dir_path_new):
+        if output_dir_path_new not in output_dir_paths_log and not os.path.exists(output_dir_path_new):
             os.mkdir(output_dir_path_new)
 
         for file in target_files:
@@ -209,9 +209,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process input and output directories.')
-    parser.add_argument('--input-root-path', type=str, required=True,
+    parser.add_argument('--input-dir', type=str, required=True,
                         help='Root directory path containing input images.')
-    parser.add_argument('--output-root-path', type=str, required=True,
+    parser.add_argument('--output-dir', type=str, required=True,
                         help='Root directory path where output images will be saved.')
     parser.add_argument('--logs-dir', type=str, required=True,
                         help='Directory path where log files will be stored.')

@@ -2,6 +2,13 @@ import os
 import re
 import pandas as pd
 import argparse
+import logging
+import datetime
+import logging_config
+
+logging_config.setup_logging()
+
+logger = logging.getLogger(__name__)
 
 def list_files(directory):
     """
@@ -30,20 +37,6 @@ def get_leaf_directory(path):
         str: The leaf directory name.
     """
     return os.path.basename(os.path.dirname(path))
-
-def oldest_date_value(group):
-    """
-    Get the file path corresponding to the oldest date in the group.
-
-    Args:
-        group (pd.Series): The group of file paths.
-
-    Returns:
-        str: The file path with the oldest date.
-    """
-    if not group.empty:
-        return group.loc[group['date'].idxmin(), 'input_path']
-    return None
 
 def get_base_directory_and_file(path):
     """
@@ -88,16 +81,7 @@ def generate_sample_sheet(input_dir, output_dir, input_ext='.nd2', output_ext='.
     sample_sheet['output_path'] = sample_sheet['output_path'].apply(remove_extension) + output_ext
     sample_sheet['processed'] = sample_sheet['output_path'].apply(lambda x: os.path.exists(x)) 
 
-    print('Sample sheet generated successfully.')
-    return sample_sheet
-
-def get_fixed_image(sample_sheet):
-    sample_sheet['date'] = pd.to_datetime(sample_sheet['input_path'].str.extract(r'(\d{4}\.\d{2}\.\d{2})')[0], format='%Y.%m.%d')
-    sample_sheet.dropna(subset=['date'], inplace=True)
-    sample_sheet.sort_values(by=['patient_id', 'date'], inplace=True)
-    sample_sheet['fixed_image_path'] = sample_sheet.groupby('patient_id')['input_path'].transform(lambda x: oldest_date_value(sample_sheet.loc[x.index]))
-    sample_sheet.drop(columns=['date'], inplace=True)
-    sample_sheet.sort_values(by=['patient_id'], inplace=True)
+    logger.info('Sample sheet generated successfully.')
     return sample_sheet
 
 def make_dirs(sample_sheet):
@@ -106,9 +90,20 @@ def make_dirs(sample_sheet):
     for dir in output_subdirs:
         if not os.path.exists(dir):
             os.mkdir(dir)
-            print(f'Created directory: "{dir}"')
+            logger.info(f'Created directory: "{dir}"')
 
 def main(args):
+    handler = logging.FileHandler(os.path.join(args.logs_dir, 'update_io.log'))
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    formatted_datetime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    sample_sheet_backup_filename = f"sample_sheet_{formatted_datetime}.csv"
+
+    sample_sheet_path = os.path.join(args.logs_dir, 'sample_sheet.csv')
+    sample_sheet_backup_path = os.path.join(args.backup_dir, sample_sheet_backup_filename)
+
     # Check that all files in output directory have a correspondence in the input directory
     input_files_stripped = [re.sub(r'\.\w+$', '', get_base_directory_and_file(file)) for file in list_files(args.input_dir)]
     output_files_stripped = [re.sub(r'\.\w+$', '', get_base_directory_and_file(file)) for file in list_files(args.output_dir)]
@@ -116,26 +111,27 @@ def main(args):
     if output_files_stripped:
         for file in output_files_stripped:
             if file not in input_files_stripped:
-                print(f'Warning: output file "{file}": no correspondence found in input directory.')
+                logger.warning(f'Output file "{file + args.output_ext}": no correspondence found in input directory.')
 
-    if os.path.exists(args.sample_sheet_path):
-        sample_sheet = pd.read_csv(args.sample_sheet_path)
+    if os.path.exists(sample_sheet_path):
+        sample_sheet = pd.read_csv(sample_sheet_path)
         # Check that all output files are in log
         output_files = list_files(args.output_dir) 
         if output_files:
             for element in output_files:
                 if element not in list(sample_sheet['output_path']):
-                    print(f'Warning: output file "{element}" not found in output files log.')
+                    logger.warning(f'Output file "{element}" not found in output files log.')
 
         # Check that all logged input files exist
         input_files = list_files(args.input_dir)
         for element in list(sample_sheet['input_path']):
             if element not in input_files:
-                print(f'Warning: input file "{element}" not found in input directory.')
+                logger.warning(f'Input file "{element}" not found in input directory.')
     
-    sample_sheet = generate_sample_sheet(args.input_dir, args.output_dir, input_ext=args.input_ext, output_ext=args.output_ext)
+    sample_sheet = generate_sample_sheet(args.input_dir, args.output_dir, args.input_ext, args.output_ext)
 
-    sample_sheet.to_csv(args.sample_sheet_path, index=False)
+    sample_sheet.to_csv(sample_sheet_path, index=False)
+    sample_sheet.to_csv(sample_sheet_backup_path, index=False)
 
     make_dirs(sample_sheet)
 
@@ -145,14 +141,14 @@ if __name__ == '__main__':
                         help='Path to directory containing input files.')
     parser.add_argument('--output-dir', type=str, required=True,
                         help='Path to directory where output images will be saved.')
-    parser.add_argument('--logs-dir', type=str, required=True,
-                        help='Path to directory where log files will be stored.')
     parser.add_argument('--backup-dir', type=str, required=True,
                         help='Path to directory where backup files will be saved.')
     parser.add_argument('--input-ext', type=str, default='.nd2',
                         help='Input files extension.')
     parser.add_argument('--output-ext', type=str, default='.ome.tiff',
                         help='Output files extension.')
+    parser.add_argument('--logs-dir', type=str, required=True,
+                        help='Path to directory where log files will be stored.')
     
     args = parser.parse_args()
     main(args)

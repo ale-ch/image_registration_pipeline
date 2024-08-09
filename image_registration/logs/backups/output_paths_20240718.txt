@@ -1,3 +1,0 @@
-/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/output/registered_stitched_images/15-13901_DAPI/REG_15-13901_DAPI_FOXP3_PDL1_2_CYCLE_3.ome.tif
-/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/output/registered_stitched_images/15-13901_DAPI/REG_15-13901_DAPI_CD14_ARPC1B_CYCLE_2.ome.tif
-/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/output/registered_stitched_images/15-13901_DAPI/REG_15-13901_DAPI_CD8_CD4_CYCLE_1.ome.tif

@@ -1,3 +1,0 @@
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/image_registration/data/15-13901_DAPI/15-13901_DAPI_FOXP3_PDL1_2_CYCLE_3.ome.tif
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/image_registration/data/15-13901_DAPI/15-13901_DAPI_CD14_ARPC1B_CYCLE_2.ome.tif
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/image_registration/data/15-13901_DAPI/15-13901_DAPI_CD8_CD4_CYCLE_1.ome.tif

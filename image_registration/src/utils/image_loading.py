@@ -1,5 +1,6 @@
 import os
 import re 
+import pandas as pd
 
 def match_pattern_str_list(pattern: str, str_list: list):
     """
@@ -76,3 +77,17 @@ def read_paths_from_file(file_path):
         with open(file_path, 'r') as file:
             return [line.strip() for line in file.readlines()]
     return []
+
+def assign_fixed_image(sample_sheet):
+    def oldest_date_value(group):
+        if not group.empty:
+            return group.loc[group['date'].idxmin(), 'input_path']
+        return None
+
+    sample_sheet['date'] = pd.to_datetime(sample_sheet['input_path'].str.extract(r'(\d{4}\.\d{2}\.\d{2})')[0], format='%Y.%m.%d')
+    sample_sheet.dropna(subset=['date'], inplace=True)
+    sample_sheet.sort_values(by=['patient_id', 'date'], inplace=True)
+    sample_sheet['fixed_image_path'] = sample_sheet.groupby('patient_id')['input_path'].transform(lambda x: oldest_date_value(sample_sheet.loc[x.index]))
+    sample_sheet.drop(columns=['date'], inplace=True)
+    sample_sheet.sort_values(by=['patient_id'], inplace=True)
+    return sample_sheet

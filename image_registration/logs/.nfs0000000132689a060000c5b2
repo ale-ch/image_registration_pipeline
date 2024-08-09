@@ -1,7 +1,0 @@
-2024-08-09 13:49:58,720 - __main__ - INFO - Sample sheet generated successfully.
-2024-08-09 13:57:44,458 - __main__ - WARNING - Output file "2024.07.09_ARP18_COV19/1_ARP18_COV19": no correspondence found in input directory.
-2024-08-09 13:57:44,458 - __main__ - WARNING - Output file "2024.07.09_ARP18_COV19/1_ARP18_COV19": no correspondence found in input directory.
-2024-08-09 13:57:44,465 - __main__ - WARNING - Input file "/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/data/input/2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2" not found in input directory.
-2024-08-09 13:57:44,465 - __main__ - WARNING - Input file "/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/data/input/2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2" not found in input directory.
-2024-08-09 13:57:55,900 - __main__ - INFO - Sample sheet generated successfully.
-2024-08-09 13:57:55,900 - __main__ - INFO - Sample sheet generated successfully.

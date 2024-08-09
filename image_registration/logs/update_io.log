@@ -1,0 +1,19 @@
+2024-08-09 15:39:06,385 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-09 15:42:35,233 - __main__ - WARNING - Output file "2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2": no correspondence found in input directory.
+2024-08-09 15:42:35,233 - __main__ - WARNING - Output file "2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2": no correspondence found in input directory.
+2024-08-09 15:42:35,235 - __main__ - WARNING - Input file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2" not found in input directory.
+2024-08-09 15:42:35,235 - __main__ - WARNING - Input file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2" not found in input directory.
+2024-08-09 15:42:43,877 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-09 15:42:43,877 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-09 15:53:03,360 - __main__ - WARNING - Output file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2" not found in output files log.
+2024-08-09 15:53:03,360 - __main__ - WARNING - Output file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2" not found in output files log.
+2024-08-09 15:53:03,360 - __main__ - WARNING - Output file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.09_ARP18_COV19/1_ARP18_COV19.nd2" not found in output files log.
+2024-08-09 15:53:03,360 - __main__ - WARNING - Input file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.09_ARP18_COV19/1_ARP18_COV19_ok.nd2" not found in input directory.
+2024-08-09 15:53:03,360 - __main__ - WARNING - Input file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.09_ARP18_COV19/1_ARP18_COV19_ok.nd2" not found in input directory.
+2024-08-09 15:53:03,360 - __main__ - WARNING - Input file "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.09_ARP18_COV19/1_ARP18_COV19_ok.nd2" not found in input directory.
+2024-08-09 15:53:04,422 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-09 15:53:04,422 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-09 15:53:04,422 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-09 15:54:28,485 - __main__ - INFO - Created directory: "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.08.08_DAITARN"
+2024-08-09 15:54:28,485 - __main__ - INFO - Created directory: "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.08.08_DAITARN"
+2024-08-09 15:54:28,485 - __main__ - INFO - Created directory: "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.08.08_DAITARN"

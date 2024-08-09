@@ -14,6 +14,9 @@ from utils.empty_folder import empty_folder
 from utils.image_loading import assign_fixed_image
 from shared import logging_config
 
+logging_config.setup_logging()
+logger = logging.getLogger(__name__)
+
 def register_images(sample_sheet_path, mappings_dir, registered_crops_dir,  
                     crop_width_x, crop_width_y, overlap_factor=0.3, delete_checkpoints=False):
     common_sample_sheet = pd.read_csv(sample_sheet_path)
@@ -47,14 +50,12 @@ def register_images(sample_sheet_path, mappings_dir, registered_crops_dir,
             logger.info(f'Content deleted successfully: {current_registered_crops_dir}')
 
 def main(args):
-    logging_config.setup_logging()
-    logger = logging.getLogger(__name__)
     handler = logging.FileHandler(os.path.join(args.logs_dir, 'image_registration.log'))
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    register_images(args.cur_logs_dir, args.mappings_dir, args.registered_crops_dir, args.fixed_image_pattern, \
+    register_images(args.sample_sheet_path, args.mappings_dir, args.registered_crops_dir,  \
                     args.crop_width_x, args.crop_width_y, args.overlap_factor, args.delete_checkpoints)
 
 if __name__ == "__main__":

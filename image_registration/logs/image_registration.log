@@ -1,3 +1,4 @@
-2024-08-09 22:08:12,442 - __main__ - INFO - Output path: /Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.28_TRT/1_TRT.png
-2024-08-09 22:09:28,062 - __main__ - INFO - Output path: /Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.28_TRT/1_TRT.png
-2024-08-09 22:19:24,093 - __main__ - INFO - Output path: /Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.28_TRT/1_TRT.png
+2024-08-10 11:25:32,272 - __main__ - INFO - Output path: /Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.29_TREN/1_TREN.tiff
+2024-08-10 11:25:32,274 - __main__ - DEBUG - Overlap X: 250
+2024-08-10 11:25:32,275 - __main__ - DEBUG - Overlap Y: 250
+2024-08-10 11:28:55,942 - __main__ - INFO - Image /Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.29_TREN/1_TREN.tiff processed successfully.

@@ -1,30 +1,34 @@
 #!/bin/bash
 
 # root_dir="/hpcnfs"
-root_dir="/Volumes"
-
-current_dir="${root_dir}/scratch/DIMA/chiodin/repositories/image_registration_pipeline"
-input_dir="${root_dir}/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/image_registration/data"
-output_dir="${root_dir}/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/image_registration/output"
+# root_dir="/Volumes"
+# current_dir="${root_dir}/scratch/DIMA/chiodin/repositories/image_registration_pipeline"
+# data_dir="${root_dir}/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/image_registration/data"
+current_dir="/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline"
+data_dir="/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/"
 
 cd "$current_dir"
+export PYTHONPATH="${current_dir}/image_registration/src:$PYTHONPATH"
 
-python "${current_dir}/shared/update_paths.py" \
-    --input-dir "${input_dir}" \
-    --output-dir "${output_dir}/registered_stitched_images" \
+python "${current_dir}/shared/update_io.py" \
+    --input-dir "${current_dir}/image_registration/data/input" \
+    --output-dir "${current_dir}/image_registration/data/output" \
+    --input-ext ".tiff" \
+    --output-ext ".tiff" \
     --logs-dir "${current_dir}/image_registration/logs/io" \
-    --cur-logs-dir "${current_dir}/image_registration/logs/io/current" \
-    --backup-dir "${current_dir}/image_registration/logs/backups" \
-    --input-ext ".ome.tif" \
-    --output-ext ".ome.tif" \
-    --output-prefix REG_
+    --backup-dir "${current_dir}/image_registration/logs/io/backups" \
+
 
 python "${current_dir}/image_registration/src/register_images.py" \
-    --cur-logs-dir "${current_dir}/image_registration/logs/io/current/" \
-    --mappings-dir "${output_dir}/mappings" \
-    --registered-crops-dir "${output_dir}/registered_crops" \
-    --fixed-image-pattern CYCLE_1 \
+    --sample-sheet-path "${current_dir}/image_registration/logs/io/sample_sheet.csv" \
+    --mappings-dir "${data_dir}/mappings" \
+    --registered-crops-dir "${data_dir}/registered_crops" \
     --crop-width-x 500 \
     --crop-width-y 500 \
+    --overlap-x 250 \
+    --overlap-y 250 \
     --overlap-factor 0.3 \
-    --delete-checkpoints True
+    --logs-dir "${current_dir}/image_registration/logs" \
+    --auto-overlap \
+    --delete-checkpoints \
+    

@@ -1,5 +1,0 @@
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/nd2_to_ome_tiff/images/output/image2/img4.ome.tiff
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/nd2_to_ome_tiff/images/output/image2/img5.ome.tiff
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/nd2_to_ome_tiff/images/output/image1/img2.ome.tiff
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/nd2_to_ome_tiff/images/output/image1/img1.ome.tiff
-/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/nd2_to_ome_tiff/images/output/image1/img3.ome.tiff

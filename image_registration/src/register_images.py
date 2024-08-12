@@ -23,7 +23,6 @@ def register_images(sample_sheet_path, mappings_dir, registered_crops_dir,
     common_sample_sheet = pd.read_csv(sample_sheet_path)
 
     sample_sheet = assign_fixed_image(common_sample_sheet)
-    sample_sheet = sample_sheet[sample_sheet['processed'] == False]
     sample_sheet = sample_sheet[sample_sheet['input_path'] != sample_sheet['fixed_image_path']]
 
     for i, row in sample_sheet.iterrows():

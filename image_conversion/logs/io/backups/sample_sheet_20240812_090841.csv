@@ -1,0 +1,6 @@
+patient_id,input_path,output_path,processed
+img4.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image2/img4.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/output/image2/img4.ome.tiff,True
+img5.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image2/img5.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/output/image2/img5.ome.tiff,True
+img2.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image1/img2.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/output/image1/img2.ome.tiff,True
+img1.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image1/img1.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/output/image1/img1.ome.tiff,True
+img3.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image1/img3.nd2,/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/output/image1/img3.ome.tiff,True

@@ -1,26 +1,33 @@
 #!/bin/bash
 
+process_dir="image_registration"
+
 # root_dir="/hpcnfs"
-# root_dir="/Volumes"
-# current_dir="${root_dir}/scratch/DIMA/chiodin/repositories/image_registration_pipeline"
-# data_dir="${root_dir}/techunits/imaging/work/ATTEND/achiodin/image_registration_pipeline/image_registration/data"
-current_dir="/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline"
-data_dir="/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/"
+root_dir="/Volumes"
 
-cd "$current_dir"
-export PYTHONPATH="${current_dir}/image_registration/src:$PYTHONPATH"
+main_dir="${root_dir}/scratch/DIMA/chiodin/repositories/image_registration_pipeline"
+# main_dir="/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline"
+data_dir="${main_dir}/${process_dir}/data"
 
-python "${current_dir}/shared/update_io.py" \
-    --input-dir "${current_dir}/image_registration/data/input" \
-    --output-dir "${current_dir}/image_registration/data/output" \
+cd "$main_dir"
+export PYTHONPATH="${main_dir}/${process_dir}/src:$PYTHONPATH"
+
+python "${main_dir}/shared/update_io.py" \
+    --input-dir "${main_dir}/${process_dir}/data/input" \
+    --output-dir "${main_dir}/${process_dir}/data/output" \
     --input-ext ".tiff" \
     --output-ext ".tiff" \
-    --logs-dir "${current_dir}/image_registration/logs/io" \
-    --backup-dir "${current_dir}/image_registration/logs/io/backups" \
+    --logs-dir "${main_dir}/${process_dir}/logs/io" \
+    --backup-dir "${main_dir}/${process_dir}/logs/io/backups" \
 
+# Returns sample sheet with the files to be currently processed
+python "${main_dir}/shared/get_files_to_process.py" \
+    --sample-sheet-path "${main_dir}/${process_dir}/logs/io/sample_sheet.csv" \
+    --output-path "${main_dir}/${process_dir}/logs/io/sample_sheet_current.csv"
 
-python "${current_dir}/image_registration/src/register_images.py" \
-    --sample-sheet-path "${current_dir}/image_registration/logs/io/sample_sheet.csv" \
+# python "${main_dir}/${process_dir}/src/register_images.py" \
+python "${main_dir}/${process_dir}/tests/register_images_222.py" \
+    --sample-sheet-path "${main_dir}/${process_dir}/logs/io/sample_sheet_current.csv" \
     --mappings-dir "${data_dir}/mappings" \
     --registered-crops-dir "${data_dir}/registered_crops" \
     --crop-width-x 500 \
@@ -28,7 +35,7 @@ python "${current_dir}/image_registration/src/register_images.py" \
     --overlap-x 250 \
     --overlap-y 250 \
     --overlap-factor 0.3 \
-    --logs-dir "${current_dir}/image_registration/logs" \
+    --logs-dir "${main_dir}/${process_dir}/logs" \
     --auto-overlap \
     --delete-checkpoints \
     

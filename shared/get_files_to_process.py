@@ -6,9 +6,9 @@ def get_files_to_process(sample_sheet_path):
     filtered_sample_sheet = full_sample_sheet[full_sample_sheet['processed'] == False]
     return filtered_sample_sheet
 
-def main():
+def main(args):
     sample_sheet = get_files_to_process(args.sample_sheet_path)
-    sample_sheet.to_csv(args.output_path)
+    sample_sheet.to_csv(args.output_path, index=False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

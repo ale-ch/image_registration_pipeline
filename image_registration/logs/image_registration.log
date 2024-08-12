@@ -1,4 +1,4 @@
-2024-08-10 11:25:32,272 - __main__ - INFO - Output path: /Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.29_TREN/1_TREN.tiff
-2024-08-10 11:25:32,274 - __main__ - DEBUG - Overlap X: 250
-2024-08-10 11:25:32,275 - __main__ - DEBUG - Overlap Y: 250
-2024-08-10 11:28:55,942 - __main__ - INFO - Image /Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.29_TREN/1_TREN.tiff processed successfully.
+2024-08-12 09:01:56,618 - __main__ - INFO - Output path: /Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/data/output/2024.07.29_TREN/1_TREN.tiff
+2024-08-12 09:01:58,249 - __main__ - DEBUG - Overlap X: 250
+2024-08-12 09:01:58,250 - __main__ - DEBUG - Overlap Y: 250
+2024-08-12 09:02:40,653 - __main__ - INFO - Image /Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_registration/data/input/2024.07.29_TREN/1_TREN.tiff processed successfully.

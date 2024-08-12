@@ -1,0 +1,25 @@
+2024-08-12 09:10:56,067 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-12 09:11:27,640 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-12 09:13:39,628 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-12 09:24:45,956 - __main__ - WARNING - Output file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/output/image1/img2.ome.tiff" not found in output files log.
+2024-08-12 09:24:45,960 - __main__ - WARNING - Output file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/output/image1/img3.ome.tiff" not found in output files log.
+2024-08-12 09:24:45,960 - __main__ - WARNING - Output file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/output/image1/img1.ome.tiff" not found in output files log.
+2024-08-12 09:24:46,003 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image2/img4.nd2" not found in input directory.
+2024-08-12 09:24:46,004 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image2/img5.nd2" not found in input directory.
+2024-08-12 09:24:46,004 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image1/img2.nd2" not found in input directory.
+2024-08-12 09:24:46,004 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image1/img1.nd2" not found in input directory.
+2024-08-12 09:24:46,004 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/nd2_to_ome_tiff/data/input/image1/img3.nd2" not found in input directory.
+2024-08-12 09:24:46,004 - __main__ - ERROR - File extension .nd2: Invalid file extension.
+2024-08-12 09:24:46,004 - __main__ - ERROR - File extension .ome.tiff: Invalid file extension.
+2024-08-12 09:24:46,084 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-12 09:27:05,875 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/input/image2/img4.nd2" not found in input directory.
+2024-08-12 09:27:05,879 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/input/image2/img5.nd2" not found in input directory.
+2024-08-12 09:27:05,879 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/input/image1/img2.nd2" not found in input directory.
+2024-08-12 09:27:05,879 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/input/image1/img1.nd2" not found in input directory.
+2024-08-12 09:27:05,880 - __main__ - WARNING - Input file "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/input/image1/img3.nd2" not found in input directory.
+2024-08-12 09:27:05,880 - __main__ - ERROR - File extension .nd2: Invalid file extension.
+2024-08-12 09:27:05,880 - __main__ - ERROR - File extension .ome.tiff: Invalid file extension.
+2024-08-12 09:27:05,938 - __main__ - INFO - Sample sheet generated successfully.
+2024-08-12 09:27:06,061 - __main__ - INFO - Created directory: "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/output/2024.07.29_TREN"
+2024-08-12 09:27:06,124 - __main__ - INFO - Created directory: "/Volumes/scratch/DIMA/chiodin/repositories/image_registration_pipeline/image_conversion/data/output/2024.07.28_TRT"
+2024-08-12 09:27:44,735 - __main__ - INFO - Sample sheet generated successfully.

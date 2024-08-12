@@ -1,4 +1,2 @@
-2024-08-10 11:25:31,883 - __main__ - WARNING - Output file "output/.tiff": no correspondence found in input directory.
-2024-08-10 11:25:31,884 - __main__ - INFO - Sample sheet generated successfully.
-2024-08-10 11:25:31,886 - __main__ - INFO - Created directory: "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.29_TREN"
-2024-08-10 11:25:31,886 - __main__ - INFO - Created directory: "/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.28_TRT"
+2024-08-12 09:01:53,940 - __main__ - WARNING - Output file "output/.tiff": no correspondence found in input directory.
+2024-08-12 09:01:54,007 - __main__ - INFO - Sample sheet generated successfully.

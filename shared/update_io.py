@@ -55,31 +55,36 @@ def get_base_directory_and_file(path):
 def remove_extension(filename):
         return re.sub(r'(\.\w+)+$', '', filename)
 
-def generate_sample_sheet(input_dir, output_dir, input_ext='.nd2', output_ext='.nd2'):
+def generate_sample_sheet(input_dir, output_dir, input_ext:str = '.nd2', output_ext:str = '.nd2'):
     """
     Generate a sample sheet with input and output paths.
 
     Args:
         input_dir (str): The directory containing input files.
         output_dir (str): The directory to store output files.
-        file_extension (str): The file extension to filter by.
+        input_ext (str): The extension of the input files.
+        output_ext (str): The extension of the output files.
 
     Returns:
         pd.DataFrame: The generated sample sheet.
     """
-    input_paths = [path for path in list_files(input_dir) if path.endswith(input_ext)]
-    patient_ids = [os.path.basename(path).split('_', 1)[0] for path in input_paths]
-    sample_sheet = pd.DataFrame({'patient_id': patient_ids, 'input_path': input_paths})
+    if not str.startswith(input_ext, '.'):
+        logger.error(f'File extension {input_ext}: Invalid file extension.')
+    if not str.startswith(input_ext, '.'):
+        logger.error(f'File extension {output_ext}: Invalid file extension.')
 
     # Function to join dir_path with the filename
     def join_path(file_path):
         return os.path.join(output_dir, file_path)
-
+    
+    input_paths = [path for path in list_files(input_dir) if path.endswith(input_ext)]
+    patient_ids = [os.path.basename(path).split('_', 1)[0] for path in input_paths]
+    sample_sheet = pd.DataFrame({'patient_id': patient_ids, 'input_path': input_paths})
     sample_sheet['base_dir'] = sample_sheet['input_path'].apply(get_base_directory_and_file)
     sample_sheet['output_path'] = sample_sheet['base_dir'].apply(join_path)
-    sample_sheet.drop(columns=['base_dir'], inplace=True)
     sample_sheet['output_path'] = sample_sheet['output_path'].apply(remove_extension) + output_ext
     sample_sheet['processed'] = sample_sheet['output_path'].apply(lambda x: os.path.exists(x)) 
+    sample_sheet.drop(columns=['base_dir'], inplace=True)
 
     logger.info('Sample sheet generated successfully.')
     return sample_sheet
@@ -105,8 +110,10 @@ def main(args):
     sample_sheet_backup_path = os.path.join(args.backup_dir, sample_sheet_backup_filename)
 
     # Check that all files in output directory have a correspondence in the input directory
-    input_files_stripped = [re.sub(r'\.\w+$', '', get_base_directory_and_file(file)) for file in list_files(args.input_dir)]
-    output_files_stripped = [re.sub(r'\.\w+$', '', get_base_directory_and_file(file)) for file in list_files(args.output_dir)]
+    input_files = list_files(args.input_dir)
+    output_files = list_files(args.output_dir)
+    input_files_stripped = [re.sub(r'(\.\w+)+$', '', get_base_directory_and_file(file)) for file in input_files if input_files]
+    output_files_stripped = [re.sub(r'(\.\w+)+$', '', get_base_directory_and_file(file)) for file in output_files if output_files]
 
     if output_files_stripped:
         for file in output_files_stripped:

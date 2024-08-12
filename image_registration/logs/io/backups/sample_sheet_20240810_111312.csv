@@ -1,3 +1,0 @@
-patient_id,input_path,output_path,processed
-1,/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.29_TREN/1_TREN.tiff,/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.29_TREN/1_TREN.tiff,True
-1,/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/input/2024.07.28_TRT/1_TRT.tiff,/Users/alessiochiodin/Documents/Repositories/image_registration_pipeline/image_registration/data/output/2024.07.28_TRT/1_TRT.tiff,False

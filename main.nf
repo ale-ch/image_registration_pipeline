@@ -19,9 +19,9 @@ def checkPathParamList = [
 
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
-include {conversion} from './modules/local/nd2_to_ome_tiff/main.nf'
+include {conversion} from './modules/local/image_conversion/main.nf'
 include {image_registration} from './modules/local/image_registration/main.nf'
-/* include {conversion} from '/hpcnfs/scratch/DIMA/chiodin/repositories/nd2conversion/modules/local/nd2_to_ome_tiff/main.nf' */
+/* include {conversion} from '/hpcnfs/scratch/DIMA/chiodin/repositories/nd2conversion/modules/local/image_conversion/main.nf' */
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,7 +39,7 @@ def extract_csv(csv_file) {
         while ((line = reader.readLine()) != null) {
             numberOfLinesInSampleSheet++
             if (numberOfLinesInSampleSheet == 1){
-                def requiredColumns = ["patient_id","nd2files", "fixed"]
+                def requiredColumns = ["patient_id","output_path", "fixed_image_path"]
                 def headerColumns = line
                 if (!requiredColumns.every { headerColumns.contains(it) }) {
                     log.error "Header missing or CSV file does not contain all of the required columns in the header: ${requiredColumns}"
@@ -57,7 +57,7 @@ def extract_csv(csv_file) {
     Channel.from(csv_file)
         .splitCsv(header: true)
         .map{ row ->
-            return [row.patient_id, row.nd2files, row.fixed]
+            return [row.patient_id, row.output_path, row.fixed_image_path]
             }
 }
 

@@ -260,7 +260,7 @@
             "database": {
                 "type": "integer",
                 "description": "Path to a database file.",
-                "default": "/hpcnfs/techunits/imaging/work/ATTEND/achiodin/nd2_to_ome_tiff/conversions_history/database.txt",
+                "default": "/hpcnfs/techunits/imaging/work/ATTEND/achiodin/image_conversion/conversions_history/database.txt",
                 "help_text": "Path to file where conversions history is saved. Should be a string, e.g. `--database '/abs/path/to/file.txt'`"
             },
             "b_tilex": {

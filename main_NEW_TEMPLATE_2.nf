@@ -19,35 +19,37 @@ def parse_csv(csv_file_path) {
         }
 }
 
-// Define processes that generates the CSV sample sheet
-
 // Define the AddOne process (Bash script)
 process AddOne {
     input:
     val row
 
     output:
-    stdout
+    tuple val(row.A), val(row.B) // Output column A and B as a tuple
 
     script:
     """
-    # Output the value of column A
-    echo ${row.A}
+    # Debugging: Output the entire row and individual values
+    echo "Row: ${row}"
+    echo "A: ${row.A}"
+    echo "B: ${row.B}"
     """
 }
 
 // Define the AddTwo process (Bash script)
 process AddTwo {
     input:
-    val row
+    tuple val(aValue), val(bValue) // Correctly receive column A and B
 
     output:
     stdout
 
     script:
+    script:
     """
-    # Output the value of column B
-    echo ${row.B}
+    # Debugging: Output the individual values received
+    echo "Received aValue: ${aValue}"
+    echo "Received bValue: ${bValue}"
     """
 }
 
@@ -56,9 +58,11 @@ workflow {
     // Parse the CSV file and create a channel
     parsed_channel = parse_csv(params.sample_sheet_path)
 
-    // Process data using AddOne and AddTwo processes
+    // Process data using AddOne and then trigger AddTwo
     addOneResult = parsed_channel | AddOne
-    addTwoResult = parsed_channel | AddTwo
+
+    // Map the results from AddOne to AddTwo
+    addTwoResult = addOneResult | AddTwo
 
     // Print final results
     addOneResult.view()

@@ -24,10 +24,14 @@ process update_io {
 }
 
 process export_samples_to_process {
+    // publishDir
     input:
     path sample_sheet_path from params.sample_sheet_path
     path sample_sheet_current_path from params.sample_sheet_current_path
-        
+
+    // output:
+    // path("out*")
+  
     script:
     """
     python bin/export_samples_to_process.py \
@@ -44,31 +48,25 @@ process convert_images {
     tag "image_conversion"
 
     input:
-        path sample_sheet_current_path from params.sample_sheet_current_path
+        tuple val(patient), path(input_path), path(output_path), val(fixed_imgs)
         int tilex from params.tilex
         int tilex from params.tiley
         int pyramid_resolutions from params.pyramid_resolutions
         int pyramid_scale from params.pyramid_scale
 
+    output:
+        tuple val(patient), path("*/${input_path.baseName}.ome.tiff"), val(fixed_imgs), emit: ome
+
     script:
     """
-    IFS=','
-    while read -r patient_id input_path output_path processed; do
-        echo "patient_id: \$patient_id"
-        echo "input_path: \$input_path"
-        echo "output_path: \$output_path"
-        echo "processed: \$processed"
-        echo "-------------------------"
-
         bfconvert \ 
             -noflat -bigtiff \ 
             -tilex ${tilex} \ 
             -tiley ${tiley} \ 
             -pyramid-resolutions ${pyramid_resolutions} \ 
             -pyramid-scale ${pyramid_scale} \ 
-            "\$input_path" "\$output_path"
+            ${input_path} ${output_path}
 
-    done < "${sample_sheet_current_path}"
     """
 }
 

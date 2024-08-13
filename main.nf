@@ -19,7 +19,7 @@ def checkPathParamList = [
 
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
-include {conversion} from './modules/local/image_conversion/main.nf'
+include {image_conversion} from './modules/local/image_conversion/main.nf'
 include {image_registration} from './modules/local/image_registration/main.nf'
 /* include {conversion} from '/hpcnfs/scratch/DIMA/chiodin/repositories/nd2conversion/modules/local/image_conversion/main.nf' */
 
@@ -39,7 +39,7 @@ def extract_csv(csv_file) {
         while ((line = reader.readLine()) != null) {
             numberOfLinesInSampleSheet++
             if (numberOfLinesInSampleSheet == 1){
-                def requiredColumns = ["patient_id","output_path", "fixed_image_path"]
+                def requiredColumns = ["patient_id", "input_path", "output_path", "fixed_imgs"]
                 def headerColumns = line
                 if (!requiredColumns.every { headerColumns.contains(it) }) {
                     log.error "Header missing or CSV file does not contain all of the required columns in the header: ${requiredColumns}"
@@ -48,7 +48,7 @@ def extract_csv(csv_file) {
             }
         }
         
-        if (numberOfLinesInSampleSheet < 2) {
+        if (numberOfLinesInSampleSheet < 2) { // header only if one line
             log.error "Provided SampleSheet has less than two lines. Provide a samplesheet with header and at least a sample."
             System.exit(1)
         }
@@ -57,13 +57,13 @@ def extract_csv(csv_file) {
     Channel.from(csv_file)
         .splitCsv(header: true)
         .map{ row ->
-            return [row.patient_id, row.output_path, row.fixed_image_path]
+            return [row.patient_id, row.input_path, row.output_path]
             }
 }
 
 input=extract_csv(file(params.input))
 
-workflow {
+workflow {exfile
     conversion(input)
 
     paired_channel = conversion.out["ome"].groupTuple(by:0).map {

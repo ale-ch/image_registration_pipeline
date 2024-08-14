@@ -2,6 +2,9 @@
 
 nextflow.enable.dsl=2
 
+include {update_io} from './modules/io_handler.nf'
+include {export_samples_to_process} from './modules/io_handler.nf'
+
 // Function to parse CSV and create a channel
 def parse_csv(path) {
     Channel
@@ -23,8 +26,8 @@ process AddOne {
     script:
     """
     # Debugging: Output the values
-    echo "A: ${A}" > results.txt
-    echo "B: ${B}" > results.txt
+    echo "A: ${A}"
+    echo "B: ${B}"
     """
 }
 

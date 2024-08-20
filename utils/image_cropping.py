@@ -83,21 +83,21 @@ def get_overlaps(image, borders_widths_prop, overlap_factor=0.2):
 
     return overlap_x, overlap_y
 
-def estimate_overlap(fixed_image: np.ndarray, moving_image: np.ndarray, n: int = 500, overlap_factor=0.2):
+def estimate_overlap(fixed_image: np.ndarray, moving_image: np.ndarray, size: int = 500, overlap_factor=0.2):
     """
     Estimate the overlap between a fixed image and a moving image.
 
     Parameters:
         fixed_image (np.ndarray): The fixed image.
         moving_image (np.ndarray): The moving image.
-        n (int, optional): Size of the crop for overlap estimation. Defaults to 500.
+        size (int, optional): Size of the crop for overlap estimation. Defaults to 500.
         overlap_factor (float, optional): Factor to adjust the overlap. Defaults to 0.2.
 
     Returns:
         tuple: Estimated overlap dimensions (overlap_x, overlap_y).
     """    
-    fixed_crop = crop_2d_array(fixed_image, crop_areas=(0, n, 0, n))
-    mov_crop = crop_2d_array(moving_image, crop_areas=(0, n, 0, n))
+    fixed_crop = crop_2d_array(fixed_image, crop_areas=(0, size, 0, size))
+    mov_crop = crop_2d_array(moving_image, crop_areas=(0, size, 0, size))
 
     affine_mapping = compute_affine_mapping_cv2(fixed_crop, mov_crop)
     reg_crop = apply_mapping(affine_mapping, mov_crop, method='cv2')[:, :, 2]
@@ -231,9 +231,6 @@ def crop_2d_array_grid(image, crop_width_x: int = None, crop_width_y: int = None
     Returns:
         list: List of cropped arrays with their indices.
     """
-    if crop_width_x is None or crop_width_y is None or overlap_x is None or overlap_y is None:
-        raise ValueError("crop_width_x, crop_width_y, overlap_x, and overlap_y must all be specified.")
-
     crop_indices, crop_areas = get_crop_areas(image, crop_width_x, crop_width_y, overlap_x, overlap_y, get_indices=True)
     crops = crop_2d_array(array=image, crop_areas=crop_areas, crop_indices=crop_indices)
 

@@ -3,6 +3,7 @@
 /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/work
 /Users/ieo7086/Documents/Repositories/image_registration_pipeline/.nextflow
 /Users/ieo7086/Documents/Repositories/image_registration_pipeline/work
+*.nextflow.log
 **/.DS_Store
 
 # Byte-compiled / optimized / DLL files

@@ -1,8 +1,6 @@
 # Hidden folders and files
-/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/.nextflow
-/hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/work
-/Users/ieo7086/Documents/Repositories/image_registration_pipeline/.nextflow
-/Users/ieo7086/Documents/Repositories/image_registration_pipeline/work
+**/.nextflow
+**/work
 *.nextflow.log
 **/.DS_Store
 

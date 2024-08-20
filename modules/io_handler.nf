@@ -16,7 +16,7 @@ process update_io {
         --output-ext ".tiff" \
         --logs-dir "${logs_dir}" \
         --backup-dir "${backup_dir}" \
-        --colnames patient_id input_path_conv output_path_conv converted \
+        --colnames patient_id input_path_conv output_path_conv converted filename \
         --export-path "${logs_dir}/io/conv_sample_sheet.csv"
 
     # Create new output folders and generate image conversion I/O sheet
@@ -27,7 +27,7 @@ process update_io {
         --output-ext ".tiff" \
         --logs-dir "${logs_dir}" \
         --backup-dir "${backup_dir}" \
-        --colnames patient_id input_path_reg output_path_reg registered \
+        --colnames patient_id input_path_reg output_path_reg registered filename \
         --export-path  "${logs_dir}/io/reg_sample_sheet.csv"
 
     python "utils/assign_fixed_image.py" \

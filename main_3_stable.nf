@@ -2,42 +2,56 @@
 
 nextflow.enable.dsl=2
 
-// Function to parse CSV and create a channel
 def parse_csv(path) {
     Channel
         .fromPath(path)
         .splitCsv(sep: ',', header: true)
         .map { row ->
-            def a = row.A?.trim() ? row.A.toInteger() : 0 
-            def b = row.B?.trim() ? row.B.toInteger() : 0 
-            def c = row.C?.trim() ? row.C.toBoolean() : false 
-            println "Parsed row: A=${a}, B=${b}, C=${c}" 
-            return [A: a, B: b, C: c]
+            def id = row.patient_id != null ? row.patient_id.trim() : "null"
+            def input_conv = row.input_path_conv != null ? row.input_path_conv.trim() : "null"
+            def output_conv = row.output_path_conv != null ? row.output_path_conv.trim() : "null"
+            def conv = row.converted != null ? (row.converted.trim().toBoolean() ?: false) : false
+            def input_reg = row.input_path_reg != null ? row.input_path_reg.trim() : "null"
+            def output_reg = row.output_path_reg != null ? row.output_path_reg.trim() : "null"
+            def reg = row.registered != null ? (row.registered.trim().toBoolean() ?: false) : false
+            def fixed_img = row.fixed_image_path != null ? row.fixed_image_path.trim() : "null"
+                    
+            return [
+                patient_id: id, 
+                input_path_conv: input_conv, 
+                output_path_conv: output_conv, 
+                converted: conv, 
+                input_path_reg: input_reg, 
+                output_path_reg: output_reg, 
+                registered: reg, 
+                fixed_image_path: fixed_img
+            ]
         }
 }
+
 
 // Define the process_1 process (Bash script)
 process process_1 {
     input:
-    tuple val(A), val(B), val(C)
+    tuple val(input_path_conv), val(output_path_conv), val(converted)
 
     output:
-    tuple val(A), val(B), val(C)
+    stdout
 
     script:
     """
     # Debugging: Output the values
     python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_1.py \
-        --A ${A + 1} \
-        --B ${B} \
-        --C ${C}
+        --A ${input_path_conv} \
+        --B ${output_path_conv} \
+        --C ${converted}
     """
 }
 
 // Define the process_2 process (Bash script)
 process process_2 {
     input:
-    tuple val(A), val(B), val(C)
+    tuple val(input_path_reg), val(output_path_reg), val(registered)
 
     output:
     stdout
@@ -46,24 +60,43 @@ process process_2 {
     """
     # Debugging: Output the values
     python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_2.py \
-        --A ${A} \
-        --B ${B + 1} \
-        --C ${C}
+        --A ${input_path_reg} \
+        --B ${output_path_reg} \
+        --C ${registered}
     """
 }
 
 // Define the workflow
 workflow {
+    // Parse CSV file and create input Channel
     input = parse_csv(params.sample_sheet_path)
 
-    // Split input based on the value of C
-    process_1_input = input.filter { !it.C } // Only when C is false
-    process_2_input = input.filter { it.C }  // Only when C is true
+    // Process input for process 1 
+    process_1_input = input
+    .map { row -> 
+            [
+                input_path_conv: row.input_path_conv, 
+                output_path_conv: row.output_path_conv, 
+                converted: row.converted
+            ] 
+        }
+    .filter { row -> !row.converted } // Filter where converted is false
+    .map { row -> tuple(row.input_path_conv, row.output_path_conv, row.converted) }
 
-    // Execute process_1 only if C is false
+    // Process input for process 2
+    process_2_input = input
+    .map { row -> 
+            [
+                input_path_reg: row.input_path_reg, 
+                output_path_reg: row.output_path_reg, 
+                converted: row.converted
+            ] 
+        }
+    .filter { row -> row.converted } // Filter where converted is false
+    .map { row -> tuple(row.input_path_reg, row.output_path_reg, row.converted) }
+
+    // Pass inputs to processes
     process_1_result = process_1(process_1_input)
-    
-    // Execute process_2 with the result of process_1 (if needed) or directly with filtered data
     process_2_result = process_2(process_2_input)
 
     // View results

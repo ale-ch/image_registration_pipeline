@@ -2,7 +2,7 @@
 **/.nextflow
 **/work
 *.nextflow.log
-*.nextflow
+*.nextflow*
 **/.DS_Store
 
 # Byte-compiled / optimized / DLL files

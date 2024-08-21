@@ -10,14 +10,14 @@ process convert_images {
     tag "image_conversion"
 
     input:
-        tuple val(patient), path(input_path), path(output_path), val(fixed_imgs)
+        tuple val(patient), path(input_path_conv), path(output_path_conv)
         int tilex from params.tilex
         int tilex from params.tiley
         int pyramid_resolutions from params.pyramid_resolutions
         int pyramid_scale from params.pyramid_scale
 
     output:
-        tuple val(patient), path("*/${input_path.baseName}.ome.tiff"), val(fixed_imgs), emit: ome
+        stdout
 
     script:
     """

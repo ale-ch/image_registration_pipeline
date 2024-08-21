@@ -8,10 +8,10 @@ def parse_csv(path) {
         .fromPath(path)
         .splitCsv(sep: ',', header: true)
         .map { row ->
-            def a = row.A?.trim() ? row.A.toInteger() : 0 // Trim and convert to integer, default to 0
-            def b = row.B?.trim() ? row.B.toInteger() : 0 // Trim and convert to integer, default to 0
-            def c = row.C?.trim() ? row.C.toBoolean() : false // Trim and convert to boolean, default to false
-            println "Parsed row: A=${a}, B=${b}, C=${c}" // Debugging statement
+            def a = row.A?.trim() ? row.A.toInteger() : 0 
+            def b = row.B?.trim() ? row.B.toInteger() : 0 
+            def c = row.C?.trim() ? row.C.toBoolean() : false 
+            println "Parsed row: A=${a}, B=${b}, C=${c}" 
             return [A: a, B: b, C: c]
         }
 }
@@ -27,12 +27,7 @@ process process_1 {
     script:
     """
     # Debugging: Output the values
-    # python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_1.py \
-    #     --A ${A + 1} \
-    #     --B ${B} \
-    #     --C ${C}
-
-    python /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/bin/test_script_1.py \
+    python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_1.py \
         --A ${A + 1} \
         --B ${B} \
         --C ${C}
@@ -50,13 +45,7 @@ process process_2 {
     script:
     """
     # Debugging: Output the values
-    # python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_2.py \
-    #     --A ${A} \
-    #     --B ${B + 1} \
-    #     --C ${C}
-
-    pwd
-    python /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/bin/test_script_2.py \
+    python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_2.py \
         --A ${A} \
         --B ${B + 1} \
         --C ${C}

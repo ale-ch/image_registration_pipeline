@@ -1,16 +1,24 @@
 process update_io {
     input:
-    path input_dir_conv from params.input_dir_conv
-    path output_dir_conv from params.output_dir_conv
-    path output_dir_reg from params.output_dir_reg
-    path backup_dir from params.backup_dir
-    path logs_dir from params.logs_dir
+    tuple val(input_dir_conv),
+        val(output_dir_conv),
+        val(input_dir_reg),
+        val(output_dir_reg),
+        val(backup_dir),
+        val(logs_dir)
+
+    output:
+    stdout
 
     script:
     """
+    export PYTHONPATH=\${PYTHONPATH:-""}:${workflow.projectDir}/utils
+
+    cd ${workflow.projectDir}
+
     # Create new output folders and generate image conversion I/O sheet
-    python "bin/update_io.py" \
-        --input-dir ""${input_dir_conv}"" \
+    python bin/update_io.py \
+        --input-dir "${input_dir_conv}" \
         --output-dir "${output_dir_conv}" \
         --input-ext ".nd2" \
         --output-ext ".tiff" \
@@ -21,7 +29,7 @@ process update_io {
 
     # Create new output folders and generate image conversion I/O sheet
     python "bin/update_io.py" \
-        --input-dir "${output_dir_conv}" \
+        --input-dir "${input_dir_reg}" \
         --output-dir "${output_dir_reg}" \
         --input-ext ".tiff" \
         --output-ext ".tiff" \

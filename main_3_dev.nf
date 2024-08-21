@@ -2,6 +2,8 @@
 
 nextflow.enable.dsl=2
 
+include {update_io} from './modules/io_handler.nf'
+
 def parse_csv(path) {
     Channel
         .fromPath(path)
@@ -28,7 +30,6 @@ def parse_csv(path) {
             ]
         }
 }
-
 
 // Define the process_1 process (Bash script)
 process process_1 {
@@ -68,32 +69,35 @@ process process_2 {
 
 // Define the workflow
 workflow {
+    // Generate sample sheet
+    update_io_input = channel.of(
+        tuple(params.input_dir_conv, 
+            params.output_dir_conv, 
+            params.input_dir_reg, 
+            params.output_dir_reg, 
+            params.backup_dir, 
+            params.logs_dir
+        )
+    )
+
+    update_io_output = update_io(update_io_input)
+
+    ////// GIVES ERROR: POSSIBLE SOLUTION: MAKE update_io OUTPUT SAMPLE SHEET PATH AS A CHANNEL //////
     // Parse CSV file and create input Channel
-    input = parse_csv(params.sample_sheet_path)
+    input = update_io_output.flatMap {
+        parse_csv(params.sample_sheet_path)
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Process input for process 1 
     process_1_input = input
-    .map { row -> 
-            [
-                input_path_conv: row.input_path_conv, 
-                output_path_conv: row.output_path_conv, 
-                converted: row.converted
-            ] 
-        }
-    .filter { row -> !row.converted } // Filter where converted is false
+    .filter { row -> !row.converted } 
     .map { row -> tuple(row.input_path_conv, row.output_path_conv, row.converted) }
 
     // Process input for process 2
     process_2_input = input
-    .map { row -> 
-            [
-                input_path_reg: row.input_path_reg, 
-                output_path_reg: row.output_path_reg, 
-                converted: row.converted
-            ] 
-        }
-    .filter { row -> row.converted } // Filter where converted is false
-    .map { row -> tuple(row.input_path_reg, row.output_path_reg, row.converted) }
+    .filter { row -> row.registered }
+    .map { row -> tuple(row.input_path_reg, row.output_path_reg, row.registered) }
 
     // Pass inputs to processes
     process_1_result = process_1(process_1_input)

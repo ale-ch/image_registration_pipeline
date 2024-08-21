@@ -27,7 +27,12 @@ process process_1 {
     script:
     """
     # Debugging: Output the values
-    python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_1.py \
+    # python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_1.py \
+    #     --A ${A + 1} \
+    #     --B ${B} \
+    #     --C ${C}
+
+    python /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/bin/test_script_1.py \
         --A ${A + 1} \
         --B ${B} \
         --C ${C}
@@ -45,7 +50,13 @@ process process_2 {
     script:
     """
     # Debugging: Output the values
-    python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_2.py \
+    # python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_2.py \
+    #     --A ${A} \
+    #     --B ${B + 1} \
+    #     --C ${C}
+
+    pwd
+    python /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/bin/test_script_2.py \
         --A ${A} \
         --B ${B + 1} \
         --C ${C}

@@ -1,9 +1,15 @@
 import argparse
+import os 
 
 def main(args):
-    print(f"Py script: A: {args.A}")
-    print(f"Py script: B: {args.B}")
-    print(f"Py script: C: {args.C}")
+    path = '/Users/alessiochiodin/Documents/Programming/Tests/image_registration_pipeline/prints'
+    filename = 'test_script_2_output.txt'
+    with open(os.path.join(path, filename), 'w') as f:
+        f.write(f"Py script: A: {args.A}")
+        f.write('\n')
+        f.write(f"Py script: B: {args.B}")
+        f.write('\n')
+        f.write(f"Py script: C: {args.C}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

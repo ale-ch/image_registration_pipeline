@@ -1,0 +1,76 @@
+Aug-21 08:07:04.501 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main_3_dev.nf
+Aug-21 08:07:04.547 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.4
+Aug-21 08:07:04.558 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/Users/alessiochiodin/.nextflow/plugins; core-plugins: nf-amazon@2.5.3,nf-azure@1.6.1,nf-cloudcache@0.4.1,nf-codecommit@0.2.1,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2-patch1,nf-tower@1.9.1,nf-wave@1.4.2-patch1
+Aug-21 08:07:04.563 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Aug-21 08:07:04.563 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Aug-21 08:07:04.565 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Aug-21 08:07:04.571 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Aug-21 08:07:04.587 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/nextflow.config
+Aug-21 08:07:04.589 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/nextflow.config
+Aug-21 08:07:04.605 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /Users/alessiochiodin/.nextflow/secrets/store.json
+Aug-21 08:07:04.606 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@2c6ee758] - activable => nextflow.secret.LocalSecretsProvider@2c6ee758
+Aug-21 08:07:04.609 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Aug-21 08:07:04.836 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 from script declaration
+Aug-21 08:07:04.844 [main] DEBUG nextflow.cli.CmdRun - Launching `main_3_dev.nf` [extravagant_lamarr] DSL2 - revision: 8cd4b9cd3c
+Aug-21 08:07:04.845 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Aug-21 08:07:04.845 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[]
+Aug-21 08:07:04.873 [main] DEBUG nextflow.Session - Session UUID: e139f396-68c6-48ba-b965-21028d279538
+Aug-21 08:07:04.873 [main] DEBUG nextflow.Session - Run name: extravagant_lamarr
+Aug-21 08:07:04.874 [main] DEBUG nextflow.Session - Executor pool size: 12
+Aug-21 08:07:04.877 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Aug-21 08:07:04.880 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=36; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Aug-21 08:07:04.901 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 24.04.4 build 5917
+  Created: 01-08-2024 07:05 UTC (09:05 CEST)
+  System: Mac OS X 14.6.1
+  Runtime: Groovy 4.0.21 on OpenJDK 64-Bit Server VM 11.0.13+7-b1751.21
+  Encoding: UTF-8 (UTF-8)
+  Process: 2278@Alessios-MBP.homenet.telecomitalia.it [192.168.1.118]
+  CPUs: 12 - Mem: 18 GB (3.4 GB) - Swap: 0 (0)
+Aug-21 08:07:04.910 [main] DEBUG nextflow.Session - Work-dir: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/work [Mac OS X]
+Aug-21 08:07:04.930 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Aug-21 08:07:04.935 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Aug-21 08:07:04.948 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Aug-21 08:07:04.954 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 13; maxThreads: 1000
+Aug-21 08:07:04.995 [main] DEBUG nextflow.Session - Session start
+Aug-21 08:07:05.166 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Aug-21 08:07:05.245 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Aug-21 08:07:05.245 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Aug-21 08:07:05.248 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Aug-21 08:07:05.252 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=12; memory=18 GB; capacity=12; pollInterval=100ms; dumpInterval=5m
+Aug-21 08:07:05.253 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Aug-21 08:07:05.283 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Aug-21 08:07:05.283 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Aug-21 08:07:05.289 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: process_2, process_1
+Aug-21 08:07:05.289 [main] DEBUG nextflow.Session - Igniting dataflow network (3)
+Aug-21 08:07:05.293 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > process_1
+Aug-21 08:07:05.293 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > process_2
+Aug-21 08:07:05.294 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_a5ecf284cd931fde: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/main_3_dev.nf
+Aug-21 08:07:05.294 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Aug-21 08:07:05.294 [main] DEBUG nextflow.Session - Session await
+Aug-21 08:07:05.303 [Actor Thread 10] INFO  nextflow.script.BaseScript - Parsed row: A=1, B=9, C=true
+Aug-21 08:07:05.305 [Actor Thread 10] INFO  nextflow.script.BaseScript - Parsed row: A=2, B=0, C=false
+Aug-21 08:07:05.306 [Actor Thread 10] INFO  nextflow.script.BaseScript - Parsed row: A=0, B=0, C=false
+Aug-21 08:07:05.306 [Actor Thread 10] INFO  nextflow.script.BaseScript - Parsed row: A=8, B=11, C=true
+Aug-21 08:07:05.405 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Aug-21 08:07:05.406 [Task submitter] INFO  nextflow.Session - [98/610f1c] Submitted process > process_2 (1)
+Aug-21 08:07:05.413 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Aug-21 08:07:05.414 [Task submitter] INFO  nextflow.Session - [c8/957f76] Submitted process > process_1 (1)
+Aug-21 08:07:05.435 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Aug-21 08:07:05.435 [Task submitter] INFO  nextflow.Session - [6a/2b9c30] Submitted process > process_1 (2)
+Aug-21 08:07:05.438 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Aug-21 08:07:05.438 [Task submitter] INFO  nextflow.Session - [3f/2d23d2] Submitted process > process_2 (2)
+Aug-21 08:07:05.440 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: process_2 (1); status: COMPLETED; exit: 0; error: -; workDir: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/work/98/610f1ce2c81ac350d95d4d1aeed5df]
+Aug-21 08:07:05.441 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=36; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Aug-21 08:07:05.443 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: process_1 (1); status: COMPLETED; exit: 0; error: -; workDir: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/work/c8/957f76c6e634d8fcf8f13d08f5420f]
+Aug-21 08:07:05.464 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: process_1 (2); status: COMPLETED; exit: 0; error: -; workDir: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/work/6a/2b9c306b925e01cf98372f391fa94e]
+Aug-21 08:07:05.466 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: process_2 (2); status: COMPLETED; exit: 0; error: -; workDir: /Users/alessiochiodin/Documents/Programming/Repositories/image_registration_pipeline/work/3f/2d23d2590d84ee75707a3fedcb7d0c]
+Aug-21 08:07:05.469 [main] DEBUG nextflow.Session - Session await > all processes finished
+Aug-21 08:07:05.570 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Aug-21 08:07:05.570 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Aug-21 08:07:05.572 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Aug-21 08:07:05.575 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=4; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=22ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=3; peakCpus=3; peakMemory=0; ]
+Aug-21 08:07:05.640 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Aug-21 08:07:05.650 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Aug-21 08:07:05.650 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

@@ -42,7 +42,7 @@ process process_1 {
     script:
     """
     # Debugging: Output the values
-    python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_1.py \
+    test_script_1.py \
         --A ${input_path_conv} \
         --B ${output_path_conv} \
         --C ${converted}
@@ -60,7 +60,7 @@ process process_2 {
     script:
     """
     # Debugging: Output the values
-    python /hpcnfs/scratch/DIMA/chiodin/repositories/image_registration_pipeline/bin/test_script_2.py \
+    python test_script_2.py \
         --A ${input_path_reg} \
         --B ${output_path_reg} \
         --C ${registered}
@@ -80,14 +80,11 @@ workflow {
         )
     )
 
-    update_io_output = update_io(update_io_input)
+    update_io(update_io_input)
 
-    ////// GIVES ERROR: POSSIBLE SOLUTION: MAKE update_io OUTPUT SAMPLE SHEET PATH AS A CHANNEL //////
-    // Parse CSV file and create input Channel
-    input = update_io_output.flatMap {
-        parse_csv(params.sample_sheet_path)
-    }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    update_io.out.view() // SO FAR SO GOOD
+
+    input = parse_csv(update_io.out) // ERROR
 
     // Process input for process 1 
     process_1_input = input

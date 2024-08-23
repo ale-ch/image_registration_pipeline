@@ -82,7 +82,7 @@ workflow {
 
     update_io(update_io_input)
 
-    update_io.out.view() // SO FAR SO GOOD
+    update_io.out.view() // SO FAR SO GOOD 
 
     input = parse_csv(update_io.out) // ERROR
 

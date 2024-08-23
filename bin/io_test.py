@@ -1,18 +1,19 @@
+#!/usr/bin/env python
+
 import pandas as pd
 import argparse
-import os
 
 def main(args):
-    a = ['hello', 'everybody', 'whopper']
-    b = ['merry', '', 'big mac']
-    c = [True, False, True]
-
-    data = {'a': a, 'b': b, 'c': c}
+    data = {
+    "name": ["Alice", "Bob"],
+    "age": [30, 25],
+    "city": ["New York", "Los Angeles"],
+    "crazy": [True, False]
+    }
 
     df = pd.DataFrame(data)
-    
-    df.to_csv(args.export_path)
-    
+    df.to_csv(args.export_path, index=False)        
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process input and output directories.')

@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
-import pandas as pd
 import argparse
+import pandas as pd
+from utils.df_from_line import df_from_line
 
 def main(args):
-    line = args.line    
-    pairs = line.strip('[]').split(', ')
-    data = {k: v for k, v in (pair.split(':') for pair in pairs)}
-
-    df = pd.DataFrame([data])
+    df = df_from_line(args.line)
 
     if 'converted' in df.columns:
         df['converted'] = df['converted'].map({'True': True, 'False': False})

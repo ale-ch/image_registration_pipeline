@@ -16,7 +16,7 @@ process update_io {
         val(logs_dir)
 
     output:
-    path "sample_sheet_current.csv"
+    path 'sample_sheet_current.csv'
 
     script:
     """
@@ -66,7 +66,7 @@ process process_1 {
 
     script:
     """
-    demo_script.py --line ${row}
+    demo_script.py --line "${row}"
     """
 }
 
@@ -92,5 +92,5 @@ workflow {
 
     parsed_lines.view()
 
-    // process_1(parsed_lines)
+    process_1(parsed_lines)
 }

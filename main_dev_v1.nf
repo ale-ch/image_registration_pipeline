@@ -2,75 +2,76 @@
 
 nextflow.enable.dsl=2
 
-include {update_io} from './modules/io_handler.nf'
+// include {update_io} from './modules/io_handler.nf'
 
-def parse_csv(path) {
-    Channel
-        .fromPath(path)
-        .splitCsv(sep: ',', header: true)
-        .map { row ->
-            def id = row.patient_id != null ? row.patient_id.trim() : "null"
-            def input_conv = row.input_path_conv != null ? row.input_path_conv.trim() : "null"
-            def output_conv = row.output_path_conv != null ? row.output_path_conv.trim() : "null"
-            def conv = row.converted != null ? (row.converted.trim().toBoolean() ?: false) : false
-            def input_reg = row.input_path_reg != null ? row.input_path_reg.trim() : "null"
-            def output_reg = row.output_path_reg != null ? row.output_path_reg.trim() : "null"
-            def reg = row.registered != null ? (row.registered.trim().toBoolean() ?: false) : false
-            def fixed_img = row.fixed_image_path != null ? row.fixed_image_path.trim() : "null"
-                    
-            return [
-                patient_id: id, 
-                input_path_conv: input_conv, 
-                output_path_conv: output_conv, 
-                converted: conv, 
-                input_path_reg: input_reg, 
-                output_path_reg: output_reg, 
-                registered: reg, 
-                fixed_image_path: fixed_img
-            ]
-        }
+process update_io {
+    publishDir "${params.sample_sheet_dir}"
+
+    input:
+    tuple val(input_dir_conv),
+        val(output_dir_conv),
+        val(input_dir_reg),
+        val(output_dir_reg),
+        val(backup_dir),
+        val(logs_dir)
+
+    output:
+    path "sample_sheet_current.csv"
+
+    script:
+    """
+    # Create new output folders and generate image conversion I/O sheet
+    update_io.py \
+        --input-dir "${input_dir_conv}" \
+        --output-dir "${output_dir_conv}" \
+        --input-ext ".nd2" \
+        --output-ext ".tiff" \
+        --logs-dir "${logs_dir}" \
+        --backup-dir "${backup_dir}" \
+        --colnames patient_id input_path_conv output_path_conv converted filename \
+        --export-path "conv_sample_sheet.csv"
+
+    # Create new output folders and generate image conversion I/O sheet
+    update_io.py \
+        --input-dir "${input_dir_reg}" \
+        --output-dir "${output_dir_reg}" \
+        --input-ext ".tiff" \
+        --output-ext ".tiff" \
+        --logs-dir "${logs_dir}" \
+        --backup-dir "${backup_dir}" \
+        --colnames patient_id input_path_reg output_path_reg registered filename \
+        --export-path  "reg_sample_sheet.csv"
+
+    ${baseDir}/bin/utils/assign_fixed_image.py \
+        --samp-sheet-path "reg_sample_sheet.csv" \
+        --export-path "reg_sample_sheet.csv" 
+
+    # Join I/O sheets
+    join_samp_sheets.py \
+        --samp-sheets-paths "conv_sample_sheet.csv" "reg_sample_sheet.csv" \
+        --key-col-name "patient_id" \
+        --filter-pending \
+        --export-path "sample_sheet_full.csv" \
+        --export-path-filtered "sample_sheet_current.csv" \
+        --backup-dir "${logs_dir}/io/backups" 
+    """
 }
 
-// Define the process_1 process (Bash script)
 process process_1 {
     input:
-    tuple val(input_path_conv), val(output_path_conv), val(converted)
+    val row
 
     output:
     stdout
 
     script:
     """
-    # Debugging: Output the values
-    test_script_1.py \
-        --A ${input_path_conv} \
-        --B ${output_path_conv} \
-        --C ${converted}
+    demo_script.py --line ${row}
     """
 }
 
-// Define the process_2 process (Bash script)
-process process_2 {
-    input:
-    tuple val(input_path_reg), val(output_path_reg), val(registered)
-
-    output:
-    stdout
-
-    script:
-    """
-    # Debugging: Output the values
-    python test_script_2.py \
-        --A ${input_path_reg} \
-        --B ${output_path_reg} \
-        --C ${registered}
-    """
-}
-
-// Define the workflow
 workflow {
-    // Generate sample sheet
-    update_io_input = channel.of(
+    update_io_params = channel.of(
         tuple(params.input_dir_conv, 
             params.output_dir_conv, 
             params.input_dir_reg, 
@@ -80,27 +81,16 @@ workflow {
         )
     )
 
-    update_io(update_io_input)
+    update_io(update_io_params)
+    csv_file_path = update_io.out
 
-    update_io.out.view() // SO FAR SO GOOD 
+    parsed_lines = csv_file_path
+        .splitCsv(header: true)
+        .map { row ->
+            return row
+        }
 
-    input = parse_csv(update_io.out) // ERROR
+    parsed_lines.view()
 
-    // Process input for process 1 
-    process_1_input = input
-    .filter { row -> !row.converted } 
-    .map { row -> tuple(row.input_path_conv, row.output_path_conv, row.converted) }
-
-    // Process input for process 2
-    process_2_input = input
-    .filter { row -> row.registered }
-    .map { row -> tuple(row.input_path_reg, row.output_path_reg, row.registered) }
-
-    // Pass inputs to processes
-    process_1_result = process_1(process_1_input)
-    process_2_result = process_2(process_2_input)
-
-    // View results
-    process_1_result.view()
-    process_2_result.view()
+    // process_1(parsed_lines)
 }

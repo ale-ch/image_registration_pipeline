@@ -13,13 +13,12 @@ def main(args):
     if 'converted' in df.columns:
         df['converted'] = df['converted'].map({'True': True, 'False': False})
 
-    df['age'] = pd.to_numeric(df['age'])
+    df['patient_id'] = pd.to_numeric(df['patient_id'])
 
-    # Conditionally modify the "age" column
     if not df["converted"].iloc[0]:  # Check the value of the "converted" column for the first row
-        df["age"] += 100
+        df["patient_id"] += 100
 
-    df.to_csv('py_result_2.csv', index=False)
+    df.to_csv('py_result.csv', index=False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

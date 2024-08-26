@@ -1,3 +1,7 @@
+#!/usr/bin/env nextflow
+
+nextflow.enable.dsl=2
+
 process update_io {
     publishDir "${params.sample_sheet_dir}"
 
@@ -10,7 +14,7 @@ process update_io {
         val(logs_dir)
 
     output:
-    path 'csvfile.csv'
+    path 'sample_sheet_current.csv'
 
     script:
     """
@@ -21,10 +25,10 @@ process update_io {
     echo "${backup_dir}" >> parsed_input.txt
     echo "${logs_dir}" >> parsed_input.txt
 
-    echo "patient_id,input_path_conv,output_path_conv,converted,input_path_reg,output_path_reg,registered,fixed_image_path" > csvfile.csv
-    echo "2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/input/2024.07.29_TREN/2_TREN.nd2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.29_TREN/2_TREN.tiff,False,,,," >> csvfile.csv
-    echo "1,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/input/2024.07.29_TREN/1_TREN.nd2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.29_TREN/1_TREN.tiff,True,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.29_TREN/1_TREN.tiff,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_registration/data/output/2024.07.29_TREN/1_TREN.tiff,False,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.28_TRT/1_TRT.tiff" >> csvfile.csv
-    echo "2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/input/2024.07.28_TRT/2_TRT.nd2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.28_TRT/2_TRT.tiff,False,,,," >> csvfile.csv 
+    echo "patient_id,input_path_conv,output_path_conv,converted,input_path_reg,output_path_reg,registered,fixed_image_path" > sample_sheet_current.csv
+    echo "2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/input/2024.07.29_TREN/2_TREN.nd2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.29_TREN/2_TREN.tiff,False,,,," >> sample_sheet_current.csv
+    echo "1,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/input/2024.07.29_TREN/1_TREN.nd2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.29_TREN/1_TREN.tiff,True,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.29_TREN/1_TREN.tiff,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_registration/data/output/2024.07.29_TREN/1_TREN.tiff,False,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.28_TRT/1_TRT.tiff" >> sample_sheet_current.csv
+    echo "2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/input/2024.07.28_TRT/2_TRT.nd2,/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline/image_conversion/data/output/2024.07.28_TRT/2_TRT.tiff,False,,,," >> sample_sheet_current.csv
     """
 }
 

@@ -1,5 +1,6 @@
 process update_io {
     publishDir "${params.sample_sheet_dir}"
+
     input:
     tuple val(input_dir_conv),
         val(output_dir_conv),
@@ -9,7 +10,7 @@ process update_io {
         val(logs_dir)
 
     output:
-    path "sample_sheet_current.csv"
+    path 'sample_sheet_current.csv'
 
     script:
     """

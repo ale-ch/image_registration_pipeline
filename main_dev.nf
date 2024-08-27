@@ -2,6 +2,12 @@
 
 nextflow.enable.dsl=2
 
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PIPELINE WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
 include {update_io} from './modules/io_handler.nf'
 include {convert_images} from './modules/local/image_conversion/main.nf'
 include {register_images} from './modules/local/image_registration/main.nf'
@@ -63,7 +69,8 @@ workflow {
             params.overlap_y,
             params.overlap_factor,
             params.auto_overlap,
-            params.delete_checkpoints
+            params.delete_checkpoints,
+            params.logs_dir
         )
     )
 

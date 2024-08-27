@@ -33,11 +33,13 @@ process convert_images {
         echo Pyramid Scale: "${params.pyramid_scale}" >> out_conv.txt
     fi
 
-    # bfconvert -noflat -bigtiff \
-    #    -tilex "${params.tilex}" \
-    #    -tiley "${params.tiley}" \
-    #    -pyramid-resolutions "${params.pyramid_resolutions}" \
-    #    -pyramid-scale "${params.pyramid_scale}" \
-    #    "${input_path_conv}" "${output_path_conv}"
+    # if [ "${converted}" == "False" ]; then
+    #   bfconvert -noflat -bigtiff \
+    #      -tilex "${params.tilex}" \
+    #      -tiley "${params.tiley}" \
+    #      -pyramid-resolutions "${params.pyramid_resolutions}" \
+    #      -pyramid-scale "${params.pyramid_scale}" \
+    #      "${input_path_conv}" "${output_path_conv}"
+    # fi
     """
 }

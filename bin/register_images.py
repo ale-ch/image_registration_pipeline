@@ -49,7 +49,8 @@ def main(args):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    register_images(args.sample_sheet_path, args.mappings_dir, args.registered_crops_dir,  \
+    register_images(args.input_path, args.output_path, args.fixed_image_path, 
+                    args.mappings_dir, args.registered_crops_dir,
                     args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y,
                     args.auto_overlap, args.overlap_factor, args.delete_checkpoints)
 
@@ -81,7 +82,6 @@ if __name__ == "__main__":
                         help='Delete image mappings and registered crops files after processing.')
     parser.add_argument('--logs-dir', type=str, required=True, 
                         help='Path to directory where log files will be stored.')
-
     args = parser.parse_args()
     
     main(args)

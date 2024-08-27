@@ -1,5 +1,5 @@
 /*
-Process to convert nd2 files into multiple resolution hierarchical tiff file.
+    Convert nd2 files into multiple resolution hierarchical tiff files.
 */
 
 process convert_images {

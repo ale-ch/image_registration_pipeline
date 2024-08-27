@@ -1,5 +1,5 @@
 process update_io {
-    publishDir "${params.sample_sheet_dir}"
+    publishDir "${params.sample_sheet_dir}", mode: "copy"
 
     input:
     tuple val(input_dir_conv),

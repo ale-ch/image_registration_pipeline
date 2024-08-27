@@ -13,7 +13,7 @@ process process_1 {
 
     script:
     """
-    demo_script.py --line "${row}"
+    demo.py --line "${row}"
     """
 }
 

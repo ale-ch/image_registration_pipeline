@@ -1,8 +1,8 @@
 process register_images {
-    cpus 5
-    memory '10G'
-    publishDir "${params.outdir}", mode: "copy"
-    container "docker://tuoprofilo/toolname:versione"
+    // cpus 5
+    // memory '10G'
+    publishDir "${params.output_dir_reg}", mode: "copy"
+    // container "docker://tuoprofilo/toolname:versione"
     tag "registration"
     
     input:
@@ -19,22 +19,27 @@ process register_images {
 
     script:
     """
-    python bin/register_images.py \
-        --sample-sheet "${sample_sheet_current_path}" \
-        --mappings-dir "${mappings_dir}" \
-        --registered-crops-dir "${registered_crops_dir}" \
-        --crop-width-x ${crop_width_x} \
-        --crop-width-y ${crop_width_y} \
-        --overlap-x ${overlap_x} \
-        --overlap-y ${overlap_y} \
-        --overlap-factor ${overlap_factor} \
-        --auto-overlap ${auto_overlap} \
-        --delete-checkpoints ${delete_checkpoints}
-    """
-}
+    echo "${sample_sheet_current_path}" > out_reg.txt
+    echo "${mappings_dir}" >> out_reg.txt
+    echo "${registered_crops_dir}" >> out_reg.txt
+    echo "${crop_width_x}" >> out_reg.txt
+    echo "${crop_width_y}" >> out_reg.txt
+    echo "${overlap_x}" >> out_reg.txt
+    echo "${overlap_y}" >> out_reg.txt
+    echo "${overlap_factor}" >> out_reg.txt
+    echo "${auto_overlap}" >> out_reg.txt
+    echo "${delete_checkpoints}>> out_reg.txt
 
-workflow {
-    update_io()
-    get_files_to_process()
-    register_images()
+    # register_images.py \
+    #     --sample-sheet "${sample_sheet_current_path}" \
+    #     --mappings-dir "${mappings_dir}" \
+    #     --registered-crops-dir "${registered_crops_dir}" \
+    #     --crop-width-x "${crop_width_x}" \
+    #     --crop-width-y "${crop_width_y}" \
+    #     --overlap-x "${overlap_x}" \
+    #     --overlap-y "${overlap_y}" \
+    #     --overlap-factor "${overlap_factor}" \
+    #     --auto-overlap "${auto_overlap}" \
+    #     --delete-checkpoints "${delete_checkpoints}"
+    """
 }

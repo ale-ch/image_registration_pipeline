@@ -3,17 +3,43 @@
 nextflow.enable.dsl=2
 
 include {update_io} from './modules/io_handler.nf'
+// include {convert_images} from './modules/local/image_conversion/main.nf'
+// include {register_images} from './modules/local/image_registration/main.nf'
 
 process process_1 {
     input:
-    val row
+    tuple val(converted), val(input_path_reg), val(output_path_reg), val(fixed_image_path)
 
     output:
     stdout
 
     script:
     """
-    demo_script.py --line "${row}"
+    reg_demo.py \
+        --converted "${converted}" \
+        --input-path "${input_path_reg}" \
+        --output-path "${output_path_reg}" \
+        --fixed-img-path "${fixed_image_path}"
+    """
+}
+
+process process_2 {
+    input:
+    tuple val(converted), val(input_path_conv), val(output_path_conv)
+
+    output:
+    stdout
+
+    script:
+    """
+    # echo "${converted}" > out_conv.txt
+    # echo "${input_path_conv}"  >> out_conv.txt
+    # echo "${output_path_conv}" >> out_conv.txt
+
+    conv_demo.py \
+        --converted "${converted}" \
+        --input-path "${input_path_conv}" \
+        --output-path "${output_path_conv}"
     """
 }
 
@@ -34,10 +60,26 @@ workflow {
     parsed_lines = csv_file_path
         .splitCsv(header: true)
         .map { row ->
-            return row
+            return [
+                patient_id      : row.patient_id,
+                input_path_conv : row.input_path_conv,
+                output_path_conv: row.output_path_conv,
+                converted       : row.converted,
+                input_path_reg  : row.input_path_reg,
+                output_path_reg : row.output_path_reg,
+                registered      : row.registered,
+                fixed_image_path: row.fixed_image_path
+            ]
         }
 
-    parsed_lines.view()
+    input_reg = parsed_lines.map { rowMap ->
+        tuple(rowMap.converted, rowMap.input_path_reg, rowMap.output_path_reg, rowMap.fixed_image_path)
+    }
 
-    process_1(parsed_lines)
+    input_conv = parsed_lines.map { rowMap ->
+        tuple(rowMap.converted, rowMap.input_path_conv, rowMap.output_path_conv)
+    }
+
+    process_1(input_reg)
+    process_2(input_conv)
 }

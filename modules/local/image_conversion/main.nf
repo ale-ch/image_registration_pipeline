@@ -10,30 +10,34 @@ process convert_images {
     tag "image_conversion"
 
     input:
-        tuple path(input_path), path(output_path)
-        int tilex from params.tilex
-        int tiley from params.tiley
-        int pyramid_resolutions from params.pyramid_resolutions
-        int pyramid_scale from params.pyramid_scale
+    tuple val(converted), 
+        val(input_path_conv), 
+        val(output_path_conv),
+        val(params.tilex),
+        val(params.tiley),
+        val(params.pyramid_resolutions),
+        val(params.pyramid_scale)
 
     output:
-        stdout
+    stdout
 
     script:
     """
-    echo "${input_path}" > out_conv.txt
-    echo "${output_path}" >> out_conv.txt
-    echo "${tilex}" > out_conv.txt
-    echo "${tiley}" >> out_conv.txt
-    echo "${pyramid_resolutions}" >> out_conv.txt
-    echo "${pyramid_scale}" >> out_conv.txt
+    if [ "${converted}" == "False" ]; then
+        echo Converted: "${converted}" > out_conv.txt
+        echo Input Path Conv: "${input_path_conv}" >> out_conv.txt
+        echo Output Path Conv: "${output_path_conv}" >> out_conv.txt
+        echo Tile X: "${params.tilex}" >> out_conv.txt
+        echo Tile Y: "${params.tiley}" >> out_conv.txt
+        echo Pyramid Resolutions: "${params.pyramid_resolutions}" >> out_conv.txt
+        echo Pyramid Scale: "${params.pyramid_scale}" >> out_conv.txt
+    fi
 
-    # bfconvert \ 
-    #     -noflat -bigtiff \ 
-    #     -tilex "${tilex}" \ 
-    #     -tiley "${tiley}" \ 
-    #     -pyramid-resolutions "${pyramid_resolutions}" \ 
-    #     -pyramid-scale "${pyramid_scale}" \ 
-    #     "${input_path}" "${output_path}"
+    # bfconvert -noflat -bigtiff \
+    #    -tilex "${params.tilex}" \
+    #    -tiley "${params.tiley}" \
+    #    -pyramid-resolutions "${params.pyramid_resolutions}" \
+    #    -pyramid-scale "${params.pyramid_scale}" \
+    #    "${input_path_conv}" "${output_path_conv}"
     """
 }

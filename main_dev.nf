@@ -3,45 +3,8 @@
 nextflow.enable.dsl=2
 
 include {update_io} from './modules/io_handler.nf'
-// include {convert_images} from './modules/local/image_conversion/main.nf'
-// include {register_images} from './modules/local/image_registration/main.nf'
-
-process process_1 {
-    input:
-    tuple val(converted), val(input_path_reg), val(output_path_reg), val(fixed_image_path)
-
-    output:
-    stdout
-
-    script:
-    """
-    reg_demo.py \
-        --converted "${converted}" \
-        --input-path "${input_path_reg}" \
-        --output-path "${output_path_reg}" \
-        --fixed-img-path "${fixed_image_path}"
-    """
-}
-
-process process_2 {
-    input:
-    tuple val(converted), val(input_path_conv), val(output_path_conv)
-
-    output:
-    stdout
-
-    script:
-    """
-    # echo "${converted}" > out_conv.txt
-    # echo "${input_path_conv}"  >> out_conv.txt
-    # echo "${output_path_conv}" >> out_conv.txt
-
-    conv_demo.py \
-        --converted "${converted}" \
-        --input-path "${input_path_conv}" \
-        --output-path "${output_path_conv}"
-    """
-}
+include {convert_images} from './modules/local/image_conversion/main.nf'
+include {register_images} from './modules/local/image_registration/main.nf'
 
 workflow {
     update_io_params = channel.of(
@@ -55,6 +18,7 @@ workflow {
     )
 
     update_io(update_io_params)
+
     csv_file_path = update_io.out
 
     parsed_lines = csv_file_path
@@ -72,14 +36,43 @@ workflow {
             ]
         }
 
-    input_reg = parsed_lines.map { rowMap ->
-        tuple(rowMap.converted, rowMap.input_path_reg, rowMap.output_path_reg, rowMap.fixed_image_path)
-    }
-
-    input_conv = parsed_lines.map { rowMap ->
+    params_conv_1 = parsed_lines.map { rowMap ->
         tuple(rowMap.converted, rowMap.input_path_conv, rowMap.output_path_conv)
     }
 
-    process_1(input_reg)
-    process_2(input_conv)
+    params_reg_1 = parsed_lines.map { rowMap ->
+        tuple(rowMap.converted, rowMap.input_path_reg, rowMap.output_path_reg, rowMap.fixed_image_path)
+    }
+
+    params_conv_2 = Channel.of(
+        tuple(
+            params.tilex, 
+            params.tiley, 
+            params.pyramid_resolutions, 
+            params.pyramid_scale
+        )
+    )
+
+    params_reg_2 = Channel.of(
+        tuple(
+            params.mappings_dir,
+            params.registered_crops_dir,
+            params.crop_width_x,
+            params.crop_width_y,
+            params.overlap_x,
+            params.overlap_y,
+            params.overlap_factor,
+            params.auto_overlap,
+            params.delete_checkpoints
+        )
+    )
+
+    input_conv = params_conv_1
+        .combine(params_conv_2)
+
+    input_reg = params_reg_1
+        .combine(params_reg_2)
+
+    convert_images(input_conv)
+    register_images(input_reg)
 }

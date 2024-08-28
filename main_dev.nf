@@ -8,9 +8,10 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-def parse_csv(ch) {
+def parse_csv(csv_file_path) {
     // Parse a CSV channel with headers, returning a map for each row.
-    ch
+    channel
+        .fromPath(csv_file_path)
         .splitCsv(header: true)
         .map { row ->
             return [
@@ -36,24 +37,15 @@ include {update_io} from './modules/io_handler.nf'
 include {convert_images} from './modules/local/image_conversion/main.nf' 
 include {register_images} from './modules/local/image_registration/main.nf' 
 
+/*
+parse input
+convert input
+register input
+*/
+
 workflow {
-    // Create a channel for I/O parameters
-    update_io_params = channel.of(
-        tuple(params.input_dir_conv,        // Input directory for conversion
-            params.output_dir_conv,         // Output directory for conversion
-            params.input_dir_reg,           // Input directory for registration
-            params.output_dir_reg,          // Output directory for registration
-            params.backup_dir,              // Directory for backups
-            params.logs_dir                 // Directory for logs
-        )
-    )
-
-    // Run I/O handler to update paths and directories
-    update_io(update_io_params)
-    csv_file_path = update_io.out  // Retrieve the path to the updated CSV file
-
     // Parse the CSV file into structured data
-    parsed_lines = parse_csv(csv_file_path)
+    parsed_lines = parse_csv(params.sample_sheet_path)
 
     // Prepare conversion parameters from parsed CSV data
     params_conv_1 = parsed_lines.map { rowMap ->

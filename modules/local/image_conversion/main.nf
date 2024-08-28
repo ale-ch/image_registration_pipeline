@@ -19,7 +19,8 @@ process convert_images {
         val(params.pyramid_scale)
 
     output:
-    stdout
+    tuple val(output_path_conv),
+        val(output_path_reg)
 
     script:
     """

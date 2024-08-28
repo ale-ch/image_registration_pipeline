@@ -13,14 +13,18 @@ process convert_images {
     tuple val(converted), 
         val(input_path_conv), 
         val(output_path_conv),
+        val(input_path_reg),
+        val(output_path_reg),
+        val(fixed_image_path),
         val(params.tilex),
         val(params.tiley),
         val(params.pyramid_resolutions),
         val(params.pyramid_scale)
 
     output:
-    tuple val(output_path_conv),
-        val(output_path_reg)
+    tuple val(input_path_reg),
+        val(output_path_reg),
+        val(fixed_image_path)
 
     script:
     """

@@ -4,36 +4,11 @@ nextflow.enable.dsl=2
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    FUNCTIONS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-def parse_csv(csv_file_path) {
-    // Parse a CSV channel with headers, returning a map for each row.
-    channel
-        .fromPath(csv_file_path)
-        .splitCsv(header: true)
-        .map { row ->
-            return [
-                patient_id      : row.patient_id,        // Patient identifier
-                input_path_conv : row.input_path_conv,   // Input path for conversion
-                output_path_conv: row.output_path_conv,  // Output path for conversion
-                converted       : row.converted,         // Conversion status
-                input_path_reg  : row.input_path_reg,    // Input path for registration
-                output_path_reg : row.output_path_reg,   // Output path for registration
-                registered      : row.registered,        // Registration status
-                fixed_image_path: row.fixed_image_path   // Path to fixed image used in registration
-            ]
-        }
-}
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PIPELINE WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include {update_io} from './modules/io_handler.nf'                     
+include { parse_csv } from './bin/utils/parse_csv.nf'                   
 include {convert_images} from './modules/local/image_conversion/main.nf' 
 include {register_images} from './modules/local/image_registration/main.nf' 
 
@@ -48,17 +23,18 @@ workflow {
     parsed_lines = parse_csv(params.sample_sheet_path)
 
     // Prepare conversion parameters from parsed CSV data
-    params_conv_1 = parsed_lines.map { rowMap ->
-        tuple(rowMap.converted, rowMap.input_path_conv, rowMap.output_path_conv)
-    }
-
-    // Prepare registration parameters from parsed CSV data
-    params_reg_1 = parsed_lines.map { rowMap ->
-        tuple(rowMap.converted, rowMap.input_path_reg, rowMap.output_path_reg, rowMap.fixed_image_path)
+    params_shared = parsed_lines.map { rowMap ->
+        tuple(
+            rowMap.input_path_conv, 
+            rowMap.output_path_conv, 
+            rowMap.input_path_reg, 
+            rowMap.output_path_reg, 
+            rowMap.fixed_image_path
+        )
     }
 
     // Define additional conversion parameters from user-defined inputs
-    params_conv_2 = Channel.of(
+    params_conv = Channel.of(
         tuple(
             params.tilex,                // Tile size in x-direction
             params.tiley,                // Tile size in y-direction
@@ -68,7 +44,7 @@ workflow {
     )
 
     // Define additional registration parameters from user-defined inputs
-    params_reg_2 = Channel.of(
+    params_reg = Channel.of(
         tuple(
             params.mappings_dir,         // Directory for storing mappings
             params.registered_crops_dir, // Directory for storing registered crops
@@ -84,15 +60,21 @@ workflow {
     )
 
     // Combine parsed CSV data with additional conversion parameters
-    input_conv = params_conv_1
-        .combine(params_conv_2)
-
-    // Combine parsed CSV data with additional registration parameters
-    input_reg = params_reg_1
-        .combine(params_reg_2)
+    input_conv = params_shared.concat(params_conv)
 
     // Execute image conversion module with combined parameters
     convert_images(input_conv)
+
+    output_conv = convert_images.out
+        .map { rowMap ->
+            tuple(
+                rowMap.input_path_reg, 
+                rowMap.output_path_reg, 
+                rowMap.fixed_image_path
+            )
+        }
+
+    input_reg = output_conv.concat(params_reg)
     
     // Execute image registration module with combined parameters
     register_images(input_reg)

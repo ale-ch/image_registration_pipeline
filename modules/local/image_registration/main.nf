@@ -10,8 +10,7 @@ process register_images {
     tag "registration"
     
     input:
-    tuple val(converted),
-        val(input_path_reg),
+    tuple val(input_path_reg),
         val(output_path_reg),
         val(fixed_image_path),
         val(params.mappings_dir),
@@ -28,21 +27,19 @@ process register_images {
     script:
     """
     ###### SUBSTITUTE SCRIPT WITH register_images.py
-    if [ "${converted}" == "True" ]; then
-        reg_demo.py \
-            --input-path "${input_path_reg}" \
-            --output-path "${output_path_reg}" \
-            --fixed-image-path "${fixed_image_path}" \
-            --mappings-dir "${params.mappings_dir}" \
-            --registered-crops-dir "${params.registered_crops_dir}" \
-            --crop-width-x "${params.crop_width_x}" \
-            --crop-width-y "${params.crop_width_y}" \
-            --overlap-x "${params.overlap_x}" \
-            --overlap-y "${params.overlap_y}" \
-            --auto-overlap \
-            --delete-checkpoints \
-            --overlap-factor "${params.overlap_factor}" \
-            --logs-dir "${params.logs_dir}"
-    fi
+    reg_demo.py \
+        --input-path "${input_path_reg}" \
+        --output-path "${output_path_reg}" \
+        --fixed-image-path "${fixed_image_path}" \
+        --mappings-dir "${params.mappings_dir}" \
+        --registered-crops-dir "${params.registered_crops_dir}" \
+        --crop-width-x "${params.crop_width_x}" \
+        --crop-width-y "${params.crop_width_y}" \
+        --overlap-x "${params.overlap_x}" \
+        --overlap-y "${params.overlap_y}" \
+        --auto-overlap \
+        --delete-checkpoints \
+        --overlap-factor "${params.overlap_factor}" \
+        --logs-dir "${params.logs_dir}"
     """
 }

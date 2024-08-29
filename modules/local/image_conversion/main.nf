@@ -11,6 +11,8 @@ process convert_images {
 
     input:
     tuple val(converted), 
+        val(registered),
+        val(fixed_image),
         val(input_path_conv), 
         val(output_path_conv),
         val(input_path_reg),
@@ -22,7 +24,8 @@ process convert_images {
         val(params.pyramid_scale)
 
     output:
-    tuple val(input_path_reg),
+    tuple val(fixed_image),
+        val(input_path_reg),
         val(output_path_reg),
         val(fixed_image_path)
 

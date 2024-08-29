@@ -30,6 +30,8 @@ workflow {
     params_shared = parsed_lines.map { row ->
         tuple(
             row.converted,
+            row.registered,
+            row.fixed_image,
             row.input_path_conv, 
             row.output_path_conv, 
             row.input_path_reg, 

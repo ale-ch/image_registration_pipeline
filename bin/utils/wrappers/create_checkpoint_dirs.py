@@ -17,15 +17,15 @@ def create_checkpoint_dirs(root_mappings_dir, root_registered_crops_dir, moving_
     current_registered_crops_dir = os.path.join(root_registered_crops_dir, image_dir, filename)
 
     if not os.path.exists(mappings_dir):
-        os.mkdir(mappings_dir)
+        os.makedirs(mappings_dir, exist_ok=True)
 
     if not os.path.exists(registered_crops_dir):
-        os.mkdir(registered_crops_dir)
+        os.makedirs(registered_crops_dir, exist_ok=True)
 
     if not os.path.exists(current_mappings_dir):
-        os.mkdir(current_mappings_dir)
+        os.makedirs(current_mappings_dir, exist_ok=True)
     
     if not os.path.exists(current_registered_crops_dir):
-        os.mkdir(current_registered_crops_dir)
+        os.makedirs(current_registered_crops_dir, exist_ok=True)
 
     return current_mappings_dir, current_registered_crops_dir

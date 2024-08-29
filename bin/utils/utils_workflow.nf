@@ -11,7 +11,8 @@ def parse_csv(csv_file_path) {
                 input_path_reg  : row.input_path_reg,    // Input path for registration
                 output_path_reg : row.output_path_reg,   // Output path for registration
                 registered      : row.registered,        // Registration status
-                fixed_image_path: row.fixed_image_path   // Path to fixed image used in registration
+                fixed_image_path: row.fixed_image_path,  // Path to fixed image used in registration
+                fixed_image     : row.fixed_image        // Flag for fixed image
             ]
         }
 }

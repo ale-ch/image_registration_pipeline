@@ -28,23 +28,23 @@ process convert_images {
 
     script:
     """
-    if [ "${converted}" == "False" ]; then
-        echo Converted: "${converted}" > out_conv.txt
-        echo Input Path Conv: "${input_path_conv}" >> out_conv.txt
-        echo Output Path Conv: "${output_path_conv}" >> out_conv.txt
-        echo Tile X: "${params.tilex}" >> out_conv.txt
-        echo Tile Y: "${params.tiley}" >> out_conv.txt
-        echo Pyramid Resolutions: "${params.pyramid_resolutions}" >> out_conv.txt
-        echo Pyramid Scale: "${params.pyramid_scale}" >> out_conv.txt
-    fi
-
     # if [ "${converted}" == "False" ]; then
-    #   bfconvert -noflat -bigtiff \
-    #      -tilex "${params.tilex}" \
-    #      -tiley "${params.tiley}" \
-    #      -pyramid-resolutions "${params.pyramid_resolutions}" \
-    #      -pyramid-scale "${params.pyramid_scale}" \
-    #      "${input_path_conv}" "${output_path_conv}"
+    #     echo Converted: "${converted}" > out_conv.txt
+    #     echo Input Path Conv: "${input_path_conv}" >> out_conv.txt
+    #     echo Output Path Conv: "${output_path_conv}" >> out_conv.txt
+    #     echo Tile X: "${params.tilex}" >> out_conv.txt
+    #     echo Tile Y: "${params.tiley}" >> out_conv.txt
+    #     echo Pyramid Resolutions: "${params.pyramid_resolutions}" >> out_conv.txt
+    #     echo Pyramid Scale: "${params.pyramid_scale}" >> out_conv.txt
     # fi
+
+    if [ "${converted}" == "False" ]; then
+      bfconvert -noflat -bigtiff \
+         -tilex "${params.tilex}" \
+         -tiley "${params.tiley}" \
+         -pyramid-resolutions "${params.pyramid_resolutions}" \
+         -pyramid-scale "${params.pyramid_scale}" \
+         "${input_path_conv}" "${output_path_conv}"
+    fi
     """
 }

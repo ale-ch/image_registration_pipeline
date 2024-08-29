@@ -27,7 +27,7 @@ process register_images {
     script:
     """
     ###### SUBSTITUTE SCRIPT WITH register_images.py
-    reg_demo.py \
+    register_images.py \
         --input-path "${input_path_reg}" \
         --output-path "${output_path_reg}" \
         --fixed-image-path "${fixed_image_path}" \

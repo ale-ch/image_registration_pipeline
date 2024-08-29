@@ -3,8 +3,8 @@
 */
 
 process convert_images {
-    memory "1G"
-    cpus 1
+    // memory "1G"
+    // cpus 1
     publishDir "${params.output_dir_conv}", mode: "copy"
     // container "docker://yinxiu/bftools:latest"
     tag "image_conversion"

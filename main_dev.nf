@@ -24,15 +24,17 @@ workflow {
     // Parse the CSV file into structured data
     parsed_lines = parse_csv(params.sample_sheet_path)
 
+    // parsed_lines.view()
+
     // Prepare conversion parameters from parsed CSV data
-    params_shared = parsed_lines.map { rowMap ->
+    params_shared = parsed_lines.map { row ->
         tuple(
-            rowMap.converted,
-            rowMap.input_path_conv, 
-            rowMap.output_path_conv, 
-            rowMap.input_path_reg, 
-            rowMap.output_path_reg, 
-            rowMap.fixed_image_path
+            row.converted,
+            row.input_path_conv, 
+            row.output_path_conv, 
+            row.input_path_reg, 
+            row.output_path_reg, 
+            row.fixed_image_path
         )
     }
 
@@ -60,13 +62,18 @@ workflow {
 
     output_conv = convert_images.out
 
+    // output_conv.view()
+
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         IMAGE REGISTRATION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
+
     // Combine converted image output with additional registration parameters
     input_reg = output_conv.combine(params_reg)
+
+    // input_reg.view()
     
     // Execute image registration module with combined parameters
     register_images(input_reg)

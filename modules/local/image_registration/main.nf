@@ -26,7 +26,6 @@ process register_images {
 
     script:
     """
-    ###### SUBSTITUTE SCRIPT WITH register_images.py
     register_images.py \
         --input-path "${input_path_reg}" \
         --output-path "${output_path_reg}" \
@@ -43,3 +42,4 @@ process register_images {
         --logs-dir "${params.logs_dir}"
     """
 }
+

@@ -27,25 +27,6 @@ process register_images {
 
     script:
     """
-    # if [ "${fixed_image}" == "False" ]; then
-    #     reg_demo.py \
-    #         --input-path "${input_path_reg}" \
-    #         --output-path "${output_path_reg}" \
-    #         --fixed-image-path "${fixed_image_path}" \
-    #         --mappings-dir "${params.mappings_dir}" \
-    #         --registered-crops-dir "${params.registered_crops_dir}" \
-    #         --crop-width-x "${params.crop_width_x}" \
-    #         --crop-width-y "${params.crop_width_y}" \
-    #         --overlap-x "${params.overlap_x}" \
-    #         --overlap-y "${params.overlap_y}" \
-    #         --auto-overlap \
-    #         --delete-checkpoints \
-    #         --overlap-factor "${params.overlap_factor}" \
-    #         --logs-dir "${params.logs_dir}"
-    #     
-    #     echo Fixed image: "${fixed_image}" >> out_reg_py.txt
-    # fi
-
     if [ "${fixed_image}" == "False" ]; then
         register_images.py \
             --input-path "${input_path_reg}" \

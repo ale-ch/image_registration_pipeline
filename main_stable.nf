@@ -8,9 +8,9 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { parse_csv } from './bin/utils/utils_workflow.nf'
-include { get_registration_params } from './bin/utils/utils_workflow.nf'     
-include { get_conversion_params } from './bin/utils/utils_workflow.nf'                        
+include { parse_csv } from './bin/utils/workflow.nf'
+include { get_registration_params } from './bin/utils/workflow.nf'     
+include { get_conversion_params } from './bin/utils/workflow.nf'                        
 include { convert_images } from './modules/local/image_conversion/main.nf' 
 include { register_images } from './modules/local/image_registration/main.nf' 
 
@@ -23,8 +23,6 @@ workflow {
     */
     // Parse the CSV file into structured data
     parsed_lines = parse_csv(params.sample_sheet_path)
-
-    // parsed_lines.view()
 
     // Prepare conversion parameters from parsed CSV data
     params_shared = parsed_lines.map { row ->
@@ -64,8 +62,6 @@ workflow {
 
     output_conv = convert_images.out
 
-    // output_conv.view()
-
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         IMAGE REGISTRATION
@@ -74,8 +70,6 @@ workflow {
 
     // Combine converted image output with additional registration parameters
     input_reg = output_conv.combine(params_reg)
-
-    // input_reg.view()
     
     // Execute image registration module with combined parameters
     register_images(input_reg)

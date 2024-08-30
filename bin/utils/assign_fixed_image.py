@@ -3,7 +3,7 @@
 import pandas as pd
 import argparse
 
-def assign_fixed_image(input_path, input_col_name='input_path_reg'):
+def assign_fixed_image(input_path, input_col_name='output_path_conv'):
     def oldest_date_value(group):
         if not group.empty:
             return group.loc[group['date'].idxmin(), input_col_name]
@@ -14,7 +14,9 @@ def assign_fixed_image(input_path, input_col_name='input_path_reg'):
     format = '%Y.%m.%d'
     sample_sheet['date'] = pd.to_datetime(sample_sheet[input_col_name].str.extract(pattern)[0], format=format)
     sample_sheet = sample_sheet.dropna(subset=['date'])
-    sample_sheet['fixed_image_path'] = sample_sheet.groupby('patient_id')[input_col_name].transform(lambda x: oldest_date_value(sample_sheet.loc[x.index]))
+    sample_sheet['fixed_image_path'] = sample_sheet \
+        .groupby('patient_id')[input_col_name] \
+        .transform(lambda x: oldest_date_value(sample_sheet.loc[x.index]))
     sample_sheet = sample_sheet.drop(columns=['date'], axis=1)
     return sample_sheet
 

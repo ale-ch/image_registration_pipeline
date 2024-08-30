@@ -37,8 +37,9 @@ def main(args):
                 (samp_sheets_joined['registered'] == '')
             )
         ]
-    
-        df['fixed_image'] = df[input_colname] == df['fixed_image_path']
+
+        samp_sheet_filtered = samp_sheet_filtered.copy()
+        samp_sheet_filtered['fixed_image'] = samp_sheet_filtered[input_colname] == samp_sheet_filtered['fixed_image_path']
 
         samp_sheet_filtered.to_csv(args.export_path_filtered, index=False)
 

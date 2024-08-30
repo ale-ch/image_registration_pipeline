@@ -181,7 +181,8 @@ def main(args):
     sample_sheet.to_csv(sample_sheet_backup_path, index=False)
     logger.info(f'Sample sheet backed up successfully to {args.export_path}')
 
-    make_dirs(sample_sheet)
+    if args.make_dirs:
+        make_dirs(sample_sheet)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process input and output directories.')
@@ -214,7 +215,8 @@ if __name__ == '__main__':
                     """)
     parser.add_argument('--export-path', type=str, required=True,
                         help='Path where to save the sample sheet.')
-    
+    parser.add_argument('--make-dirs', action='store_true',
+                        help='Path where to save the sample sheet.')
     
     args = parser.parse_args()
     main(args)

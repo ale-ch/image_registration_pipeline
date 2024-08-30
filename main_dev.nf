@@ -8,9 +8,9 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { parse_csv } from './bin/utils/utils_workflow.nf'
-include { get_registration_params } from './bin/utils/utils_workflow.nf'     
-include { get_conversion_params } from './bin/utils/utils_workflow.nf'                        
+include { parse_csv } from './bin/utils/workflow.nf'
+include { get_registration_params } from './bin/utils/workflow.nf'     
+include { get_conversion_params } from './bin/utils/workflow.nf'                        
 include { convert_images } from './modules/local/image_conversion/main.nf' 
 include { register_images } from './modules/local/image_registration/main.nf' 
 

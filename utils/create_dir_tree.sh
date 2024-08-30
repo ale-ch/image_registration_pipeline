@@ -2,14 +2,14 @@
 
 # Function to print usage
 usage() {
-  echo "Usage: $0 --main_dir /path/to/main_dir"
+  echo "Usage: $0 --main-dir /path/to/main_dir"
   exit 1
 }
 
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --main_dir)
+    --main-dir)
       main_dir="$2"
       shift 2
       ;;
@@ -22,7 +22,7 @@ done
 
 # Check if main_dir is provided and valid
 if [ -z "${main_dir}" ]; then
-  echo "Error: --main_dir is required"
+  echo "Error: --main-dir is required"
   usage
 fi
 
@@ -58,4 +58,4 @@ mkdir -p "${output_dir_reg}"
 mkdir -p "${mappings_dir}"
 mkdir -p "${registered_crops_dir}"
 
-echo "Directories have been created and verified. Proceeding with the pipeline."
+echo "Directories have been created and verified."

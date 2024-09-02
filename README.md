@@ -30,7 +30,7 @@ https://github.com/dimadatascience/nd2conversion.git
 To run the pipeline
 
 ```
-nextflow run path_to/main.nf -profile singularity --input samplesheet.csv --outdir outdir
+nextflow run path_to/main.nf -profile singularity --main_dir /path/to/dir --sample_sheet_path /path/to/file.csv
 ```
 
 ## Input

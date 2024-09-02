@@ -21,7 +21,7 @@ workflow {
         PARSE CSV INPUT
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-    // Parse the CSV file into structured data
+
     parsed_lines = parse_csv(params.sample_sheet_path)
 
     // Prepare conversion parameters from parsed CSV data

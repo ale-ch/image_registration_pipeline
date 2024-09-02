@@ -143,14 +143,15 @@ def main(args):
     logger.addHandler(handler)
 
     formatted_datetime = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.basename(args.export_path)
-    sample_sheet_backup_path = os.path.join(args.backup_dir, formatted_datetime + '_' + filename)
+    sample_sheet_backup_path = os.path.join(args.backup_dir, formatted_datetime + '_' + os.path.basename(args.export_path))
     
     # Check that all files in output directory have a correspondence in the input directory
     input_files = [path for path in list_files(args.input_dir) if path.endswith(args.input_ext)]
     output_files = [path for path in list_files(args.output_dir) if path.endswith(args.output_ext)]
-    input_filenames = [re.sub(r'(\.\w+)+$', '', os.path.basename(file)) for file in input_files if input_files]
-    output_filenames = [re.sub(r'(\.\w+)+$', '', os.path.basename(file)) for file in output_files if output_files]
+    input_filenames = [re.sub(r'(\.\w+)+$', '', file) for file in input_files if input_files]
+    output_filenames = [re.sub(r'(\.\w+)+$', '', file) for file in output_files if output_files]
+
+    print(args.input_dir)
 
     if output_filenames:
         for filename, file_path in zip(output_filenames, output_files):

@@ -15,7 +15,6 @@ process convert_images {
         val(fixed_image),
         val(input_path_conv), 
         val(output_path_conv),
-        val(input_path_reg),
         val(output_path_reg),
         val(fixed_image_path),
         val(params.tilex),
@@ -25,7 +24,7 @@ process convert_images {
 
     output:
     tuple val(fixed_image),
-        val(input_path_reg),
+        val(output_path_conv),
         val(output_path_reg),
         val(fixed_image_path)
 

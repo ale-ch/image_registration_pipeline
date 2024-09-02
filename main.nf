@@ -31,8 +31,7 @@ workflow {
             row.registered,
             row.fixed_image,
             row.input_path_conv, 
-            row.output_path_conv, 
-            row.input_path_reg, 
+            row.output_path_conv,  
             row.output_path_reg, 
             row.fixed_image_path
         )

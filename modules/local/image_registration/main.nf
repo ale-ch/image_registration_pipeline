@@ -11,7 +11,7 @@ process register_images {
     
     input:
     tuple val(fixed_image),
-        val(input_path_reg),
+        val(output_path_conv),
         val(output_path_reg),
         val(fixed_image_path),
         val(params.mappings_dir),
@@ -29,7 +29,7 @@ process register_images {
     """
     if [ "${fixed_image}" == "False" ]; then
         register_images.py \
-            --input-path "${input_path_reg}" \
+            --input-path "${output_path_conv}" \
             --output-path "${output_path_reg}" \
             --fixed-image-path "${fixed_image_path}" \
             --mappings-dir "${params.mappings_dir}" \

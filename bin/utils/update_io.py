@@ -148,11 +148,9 @@ def main(args):
     # Check that all files in output directory have a correspondence in the input directory
     input_files = [path for path in list_files(args.input_dir) if path.endswith(args.input_ext)]
     output_files = [path for path in list_files(args.output_dir) if path.endswith(args.output_ext)]
-    input_filenames = [re.sub(r'(\.\w+)+$', '', file) for file in input_files if input_files]
-    output_filenames = [re.sub(r'(\.\w+)+$', '', file) for file in output_files if output_files]
-
-    print(args.input_dir)
-
+    input_filenames = [os.path.basename(re.sub(r'(\.\w+)+$', '', file)) for file in input_files if input_files]
+    output_filenames = [os.path.basename(re.sub(r'(\.\w+)+$', '', file) )for file in output_files if output_files]
+    
     if output_filenames:
         for filename, file_path in zip(output_filenames, output_files):
             if filename not in input_filenames:

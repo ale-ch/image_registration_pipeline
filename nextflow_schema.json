@@ -23,18 +23,7 @@
             "description": "Define user input parameters that can be set through the command line.",
             "required": [
                 "main_dir",
-                "sample_sheet_path",
-                "tilex",
-                "tiley",
-                "pyramid_resolutions",
-                "pyramid_scale",
-                "crop_width_x",
-                "crop_width_y",
-                "overlap_x",
-                "overlap_y",
-                "overlap_factor",
-                "auto_overlap",
-                "delete_checkpoints"
+                "sample_sheet_path"
             ],
             "properties": {
                 "main_dir": {

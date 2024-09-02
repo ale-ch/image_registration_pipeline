@@ -8,10 +8,10 @@ print_required_args() {
 
 print_optional_args() {
     echo "Optional:"
-    echo "  --export-path /path/to/file  Path to export file"
+    echo "  --export-path /path/to/file  Path to export file (default: <main_dir>/logs/io/sample_sheet_current.csv)"
     echo "  --make-dirs true|false       Create directories if they don't exist (default: false)"
-    echo "  --input-dir-conv /path       Input directory for conversion"
-    echo "  --output-dir-reg /path       Output directory for registration"
+    echo "  --input-dir-conv /path       Input directory for conversion (default: <main_dir>/data/input/image_conversion)"
+    echo "  --output-dir-reg /path       Output directory for registration (default: <main_dir>/data/output/image_registration)"
 }
 
 usage() {

@@ -46,16 +46,16 @@ if [ ! -d "$main_dir" ]; then
     exit 1
 fi
 
-# Extract the directory path from export_path
-if [ -n "$export_path" ]; then
-    export_dir=$(dirname "$export_path")
-fi
-
-# Check if the export directory exists
-if [ ! -d "$export_dir" ]; then
-    echo "Error: The directory path for the export file does not exist: $export_dir"
-    exit 1
-fi
+# # Extract the directory path from export_path
+# if [ -n "$export_path" ]; then
+#     export_dir=$(dirname "$export_path")
+# fi
+# 
+# # Check if the export directory exists
+# if [ ! -d "$export_dir" ]; then
+#     echo "Error: The directory path for the export file does not exist: $export_dir"
+#     exit 1
+# fi
 
 # main_dir='/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline'
 
@@ -85,7 +85,8 @@ mappings_dir="${main_dir}/data/mappings"
 registered_crops_dir="${main_dir}/data/registered_crops"
 
 # Create sample sheet for image conversion
-python ./bin/utils/update_io.py \
+echo "Creating conv_sample_sheet.csv"
+python ./bin/utils/generate_sample_sheet/update_io.py \
     --input-dir "${input_dir_conv}" \
     --output-dir "${output_dir_conv}" \
     --input-ext ".nd2" \
@@ -97,15 +98,17 @@ python ./bin/utils/update_io.py \
     --make-dirs
 
 # Assign the fixed image to each patient id
-python ./bin/utils/assign_fixed_image.py \
+echo "Assigning fixed_image_path to conv_sample_sheet.csv"
+python ./bin/utils/generate_sample_sheet/assign_fixed_image.py \
     --samp-sheet-path "${logs_dir}/io/conv_sample_sheet.csv" \
     --export-path "${logs_dir}/io/conv_sample_sheet.csv"
 
 # Create sample sheet for image registration
-python ./bin/utils/update_io.py \
-    --input-dir "${input_dir_reg}" \
+echo "Creating reg_sample_sheet.csv"
+python ./bin/utils/generate_sample_sheet/update_io.py \
+    --input-dir "${input_dir_conv}" \
     --output-dir "${output_dir_reg}" \
-    --input-ext ".tiff" \
+    --input-ext ".nd2" \
     --output-ext ".tiff" \
     --logs-dir "${logs_dir}" \
     --backup-dir "${backup_dir}" \
@@ -113,8 +116,14 @@ python ./bin/utils/update_io.py \
     --export-path "${logs_dir}/io/reg_sample_sheet.csv" \
     --make-dirs
 
+python ./bin/utils/generate_sample_sheet/remove_columns.py \
+    --csv-file-path "${logs_dir}/io/reg_sample_sheet.csv" \
+    --column input_path_reg patient_id \
+    --export-path "${logs_dir}/io/reg_sample_sheet.csv"
+
 # Join I/O sheets
-python ./bin/utils/join_samp_sheets.py \
+echo "Joining "${logs_dir}/io/conv_sample_sheet.csv" and "${logs_dir}/io/reg_sample_sheet.csv""
+python ./bin/utils/generate_sample_sheet/join_samp_sheets.py \
     --samp-sheets-paths "${logs_dir}/io/conv_sample_sheet.csv" "${logs_dir}/io/reg_sample_sheet.csv" \
     --key-col-name "patient_id" \
     --filter-pending \

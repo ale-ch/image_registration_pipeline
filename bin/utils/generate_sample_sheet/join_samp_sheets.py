@@ -20,6 +20,7 @@ def main(args):
             samp_sheets[idx] = df.drop([df.columns[0]], axis=1)
 
     key = samp_sheets[0].columns[4]
+    print(key)
     samp_sheets_joined = reduce(lambda left, right: pd.merge(left, right, on=key, how='left'), samp_sheets)
     samp_sheets_joined = samp_sheets_joined.drop(columns=key)
 

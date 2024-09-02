@@ -115,15 +115,20 @@ def generate_sample_sheet(input_dir:str, output_dir:str, input_ext:str, output_e
     
     input_paths = [path for path in list_files(input_dir) if path.endswith(input_ext)]
     patient_ids = [os.path.basename(path).split('_', 1)[0] for path in input_paths]
-    sample_sheet = pd.DataFrame({'patient_id': patient_ids, 'input_path': input_paths})
-    sample_sheet['base_dir'] = sample_sheet['input_path'].apply(get_base_directory_and_file)
-    sample_sheet['output_path'] = sample_sheet['base_dir'].apply(join_path)
-    sample_sheet['output_path'] = sample_sheet['output_path'].apply(remove_extension) + output_ext
-    sample_sheet['processed'] = sample_sheet['output_path'].apply(lambda x: os.path.exists(x))
-    sample_sheet['filename'] = sample_sheet['output_path'].apply(remove_extension).apply(os.path.basename)
-    sample_sheet = sample_sheet.drop(columns=['base_dir'])
-    logger.debug('Sample sheet generated successfully.')
-    return sample_sheet
+
+    if input_paths:
+        sample_sheet = pd.DataFrame({'patient_id': patient_ids, 'input_path': input_paths})
+        sample_sheet['base_dir'] = sample_sheet['input_path'].apply(get_base_directory_and_file)
+        sample_sheet['output_path'] = sample_sheet['base_dir'].apply(join_path)
+        sample_sheet['output_path'] = sample_sheet['output_path'].apply(remove_extension) + output_ext
+        sample_sheet['processed'] = sample_sheet['output_path'].apply(lambda x: os.path.exists(x))
+        sample_sheet['filename'] = sample_sheet['output_path'].apply(remove_extension).apply(os.path.basename)
+        sample_sheet = sample_sheet.drop(columns=['base_dir'])
+        logger.debug('Sample sheet generated successfully.')
+        return sample_sheet
+    else:
+        return pd.DataFrame()
+    
 
 def make_dirs(sample_sheet):
     output_subdirs = list(sample_sheet[args.colnames[2]].apply(os.path.dirname))
@@ -172,8 +177,13 @@ def main(args):
     
     sample_sheet = generate_sample_sheet(args.input_dir, args.output_dir, args.input_ext, args.output_ext)
 
-    if args.colnames:
-        sample_sheet.columns = args.colnames
+    if not sample_sheet.empty:
+        if args.colnames:
+            sample_sheet.columns = args.colnames
+    else: 
+        sample_sheet = pd.DataFrame(columns=args.colnames)
+
+    print(sample_sheet.columns)
 
     sample_sheet.to_csv(args.export_path, index=False)
     logger.info(f'Sample sheet exported successfully to {args.export_path}')

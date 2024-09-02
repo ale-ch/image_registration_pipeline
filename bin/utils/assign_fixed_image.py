@@ -3,21 +3,21 @@
 import pandas as pd
 import argparse
 
-def assign_fixed_image(input_path, input_col_name='output_path_conv'):
-    def oldest_date_value(group):
-        if not group.empty:
-            return group.loc[group['date'].idxmin(), input_col_name]
-        return None
-    
+def assign_fixed_image(input_path, ref_colname='output_path_conv'):
     sample_sheet = pd.read_csv(input_path)
-    pattern = r'(\d{4}\.\d{2}\.\d{2})'
-    format = '%Y.%m.%d'
-    sample_sheet['date'] = pd.to_datetime(sample_sheet[input_col_name].str.extract(pattern)[0], format=format)
-    sample_sheet = sample_sheet.dropna(subset=['date'])
-    sample_sheet['fixed_image_path'] = sample_sheet \
-        .groupby('patient_id')[input_col_name] \
-        .transform(lambda x: oldest_date_value(sample_sheet.loc[x.index]))
-    sample_sheet = sample_sheet.drop(columns=['date'], axis=1)
+
+    # Extract date from the path
+    sample_sheet['date'] = sample_sheet[ref_colname].str.extract(r'(\d{4}\.\d{2}\.\d{2})')
+
+    # Convert the extracted date to datetime
+    sample_sheet['date'] = pd.to_datetime(sample_sheet['date'], format='%Y.%m.%d')
+
+    # Sort by patient_id and date
+    sample_sheet = sample_sheet.sort_values(['patient_id', 'date'])
+
+    # Group by patient_id and get the path corresponding to the oldest date
+    sample_sheet['fixed_image_path'] = sample_sheet.groupby('patient_id')[ref_colname].transform('first')
+    sample_sheet = sample_sheet.drop(columns=['date'])
     return sample_sheet
 
 def main(args):

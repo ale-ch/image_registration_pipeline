@@ -1,8 +1,23 @@
 #!/bin/bash
 
 # Function to display usage
+print_required_args() {
+    echo "Required:"
+    echo "  --main-dir /path/to/dir      Main directory path"
+    echo "  --export-path /path/to/file  Path to export file"
+}
+
+print_optional_args() {
+    echo "Optional:"
+    echo "  --make-dirs true|false       Create directories if they don't exist (default: false)"
+    echo "  --input-dir-conv /path       Input directory for conversion"
+    echo "  --output-dir-reg /path       Output directory for registration"
+}
+
 usage() {
-    echo "Usage: $0 --main-dir /path/to/main_dir --export-path /path/to/file [--make-dirs <true/false>]" 
+    echo "Usage: $0 [options]"
+    print_required_args
+    print_optional_args
     exit 1
 }
 
@@ -12,6 +27,8 @@ while [[ "$#" -gt 0 ]]; do
         --main-dir) main_dir="$2"; shift ;;
         --export-path) export_path="$2"; shift ;;
         --make-dirs) make_dirs="$2"; shift ;;
+        --input-dir-conv) input_dir_conv="$2"; shift;;
+        --output-dir-reg) output_dir_reg="$2"; shift;;
         *) usage ;;
     esac
     shift
@@ -59,12 +76,11 @@ output_dir_conv="${output_dir}/image_conversion"
 
 ## Image registration
 input_dir_reg="${output_dir_conv}"
-# input_dir_reg="${input_dir}/image_registration"
 output_dir_reg="${output_dir}/image_registration"
 mappings_dir="${main_dir}/data/mappings"
 registered_crops_dir="${main_dir}/data/registered_crops"
 
-# Create new output folders and generate image conversion I/O sheet
+# Create sample sheet for image conversion
 python ./bin/utils/update_io.py \
     --input-dir "${input_dir_conv}" \
     --output-dir "${output_dir_conv}" \
@@ -76,7 +92,12 @@ python ./bin/utils/update_io.py \
     --export-path "${logs_dir}/io/conv_sample_sheet.csv" \
     --make-dirs
 
-# Create new output folders and generate image conversion I/O sheet
+# Assign the fixed image to each patient id
+python ./bin/utils/assign_fixed_image.py \
+    --samp-sheet-path "${logs_dir}/io/conv_sample_sheet.csv" \
+    --export-path "${logs_dir}/io/conv_sample_sheet.csv"
+
+# Create sample sheet for image registration
 python ./bin/utils/update_io.py \
     --input-dir "${input_dir_reg}" \
     --output-dir "${output_dir_reg}" \
@@ -87,14 +108,6 @@ python ./bin/utils/update_io.py \
     --colnames patient_id input_path_reg output_path_reg registered filename \
     --export-path "${logs_dir}/io/reg_sample_sheet.csv" \
     --make-dirs
-
-# python ./bin/utils/assign_fixed_image.py \
-#     --samp-sheet-path "${logs_dir}/io/reg_sample_sheet.csv" \
-#     --export-path "${logs_dir}/io/reg_sample_sheet.csv" 
-
-python ./bin/utils/assign_fixed_image.py \
-    --samp-sheet-path "${logs_dir}/io/conv_sample_sheet.csv" \
-    --export-path "${logs_dir}/io/conv_sample_sheet.csv" 
 
 # Join I/O sheets
 python ./bin/utils/join_samp_sheets.py \

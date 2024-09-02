@@ -29,7 +29,7 @@ def main(args):
 
     # Export filtered sample sheet
     if args.filter_pending:
-        input_colname = 'input_path_reg'
+        ref_colname = 'output_path_conv'
         samp_sheet_filtered = samp_sheets_joined[
             (
                 (samp_sheets_joined['converted'] == False) | 
@@ -39,7 +39,7 @@ def main(args):
         ]
 
         samp_sheet_filtered = samp_sheet_filtered.copy()
-        samp_sheet_filtered['fixed_image'] = samp_sheet_filtered[input_colname] == samp_sheet_filtered['fixed_image_path']
+        samp_sheet_filtered['fixed_image'] = samp_sheet_filtered[ref_colname] == samp_sheet_filtered['fixed_image_path']
 
         samp_sheet_filtered.to_csv(args.export_path_filtered, index=False)
 

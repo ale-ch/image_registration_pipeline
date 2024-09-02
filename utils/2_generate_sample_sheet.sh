@@ -46,17 +46,6 @@ if [ ! -d "$main_dir" ]; then
     exit 1
 fi
 
-# # Extract the directory path from export_path
-# if [ -n "$export_path" ]; then
-#     export_dir=$(dirname "$export_path")
-# fi
-# 
-# # Check if the export directory exists
-# if [ ! -d "$export_dir" ]; then
-#     echo "Error: The directory path for the export file does not exist: $export_dir"
-#     exit 1
-# fi
-
 # main_dir='/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline'
 
 if [ -z "${export_path}" ]; then

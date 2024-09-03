@@ -69,7 +69,7 @@ workflow {
 
     // Combine converted image output with additional registration parameters
     input_reg = output_conv.combine(params_reg)
-    
+
     // Execute image registration module with combined parameters
     register_images(input_reg)
 }

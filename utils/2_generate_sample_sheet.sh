@@ -79,7 +79,7 @@ python ./bin/utils/generate_sample_sheet/update_io.py \
     --input-dir "${input_dir_conv}" \
     --output-dir "${output_dir_conv}" \
     --input-ext ".nd2" \
-    --output-ext ".tiff" \
+    --output-ext ".ome.tiff" \
     --logs-dir "${logs_dir}" \
     --backup-dir "${backup_dir}" \
     --colnames patient_id input_path_conv output_path_conv converted filename \
@@ -98,7 +98,7 @@ python ./bin/utils/generate_sample_sheet/update_io.py \
     --input-dir "${input_dir_conv}" \
     --output-dir "${output_dir_reg}" \
     --input-ext ".nd2" \
-    --output-ext ".tiff" \
+    --output-ext ".ome.tiff" \
     --logs-dir "${logs_dir}" \
     --backup-dir "${backup_dir}" \
     --colnames patient_id input_path_reg output_path_reg registered filename \

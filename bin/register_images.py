@@ -17,7 +17,8 @@ from utils import logging_config
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
-def register_images(input_path, output_path, fixed_image_path, mappings_dir, registered_crops_dir,  
+def register_images(input_path, output_path, fixed_image_path, 
+                    mappings_dir, registered_crops_dir,  
                     crop_width_x, crop_width_y, overlap_x, overlap_y, 
                     auto_overlap, overlap_factor, delete_checkpoints):
     logger.info(f'Output path: {output_path}')

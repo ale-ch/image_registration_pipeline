@@ -30,7 +30,7 @@ process convert_images {
 
     script:
     """
-    if [ "${converted}" == "False" ]; then
+    if [ "${converted}" == "False" ] || [ "${converted}" == "FALSE" ]; then
       bfconvert -noflat -bigtiff \
          -tilex "${params.tilex}" \
          -tiley "${params.tiley}" \

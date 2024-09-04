@@ -27,7 +27,7 @@ process register_images {
 
     script:
     """
-    if [ "${fixed_image}" == "False" ]; then
+    if [ "${fixed_image}" == "False" ] || [ "${fixed_image}" == "FALSE" ]; then
         register_images.py \
             --input-path "${output_path_conv}" \
             --output-path "${output_path_reg}" \

@@ -11,7 +11,8 @@ nextflow.enable.dsl=2
 include { parse_csv } from './bin/utils/workflow.nf'
 include { get_registration_params } from './bin/utils/workflow.nf'     
 include { get_conversion_params } from './bin/utils/workflow.nf'                        
-include { convert_images } from './modules/local/image_conversion/main.nf' 
+include { convert_fixed_images } from './modules/local/image_conversion/main.nf'
+include { convert_moving_images } from './modules/local/image_conversion/main.nf'  
 include { register_images } from './modules/local/image_registration/main.nf' 
 
 workflow {
@@ -56,10 +57,10 @@ workflow {
     // Combine parsed CSV data with additional conversion parameters
     input_conv = params_shared.combine(params_conv)
 
-    // Execute image conversion module with combined parameters
-    convert_images(input_conv)
+    convert_fixed_images(input_conv)
+    convert_moving_images(input_conv)
 
-    output_conv = convert_images.out
+    output_conv = convert_moving_images.out
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

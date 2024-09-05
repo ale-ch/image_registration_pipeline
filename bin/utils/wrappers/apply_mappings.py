@@ -1,8 +1,5 @@
 import os
 
-# from src.utils.image_mapping import apply_mapping
-# from src.utils.pickle_utils import load_pickle, save_pickle
-
 from utils.image_mapping import apply_mapping
 from utils.pickle_utils import load_pickle, save_pickle
 

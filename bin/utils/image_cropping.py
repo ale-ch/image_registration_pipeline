@@ -1,6 +1,5 @@
 import numpy as np
 
-# from src.utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
 from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
 
 def compute_border_width(arr: np.ndarray, proportion=True):

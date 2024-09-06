@@ -1,11 +1,16 @@
 # Import necessary libraries
 import cv2
 import numpy as np
-
+import logging
+from utils import logging_config
 from dipy.align.imwarp import SymmetricDiffeomorphicRegistration
 from dipy.align.metrics import CCMetric
 from dipy.align.transforms import AffineTransform2D
 from dipy.align.imaffine import AffineRegistration
+
+
+logging_config.setup_logging()
+logger = logging.getLogger(__name__)
 
 def compute_diffeomorphic_mapping_dipy(y: np.ndarray, x: np.ndarray, sigma_diff=20, radius=20):
     """
@@ -56,9 +61,26 @@ def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray):
     x_normalized = cv2.normalize(x, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
     # Detect ORB keypoints and descriptors
-    orb = cv2.ORB_create()
+    orb = cv2.ORB_create(
+        fastThreshold=0, 
+        edgeThreshold=0
+    )
     keypoints1, descriptors1 = orb.detectAndCompute(y_normalized, None)
     keypoints2, descriptors2 = orb.detectAndCompute(x_normalized, None)
+
+    if descriptors1 is None or descriptors2 is None:
+        raise ValueError("One of the descriptors is empty")
+    
+    # Convert descriptors to uint8 if they are not already in that format
+    if descriptors1 is not None and descriptors1.dtype != np.uint8:
+        descriptors1 = descriptors1.astype(np.uint8)
+
+    if descriptors2 is not None and descriptors2.dtype != np.uint8:
+        descriptors2 = descriptors2.astype(np.uint8)
+
+    # logger.debug(f"Descriptor1 shape: type: {descriptors1.dtype}")
+    # logger.debug(f"Descriptor2 shape: type: {descriptors2.dtype}")
+    
 
     # Match descriptors using BFMatcher
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)

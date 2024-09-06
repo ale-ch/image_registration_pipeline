@@ -6,14 +6,9 @@ import pandas as pd
 import argparse
 import logging
 import datetime
-# import utils.logging_config as logging_config
+import utils.logging_config as logging_config
 
-# logging_config.setup_logging()
-
-def setup_logging():
-    logging.basicConfig(level=logging.DEBUG, filemode='a+', format='%(asctime)s - %(levelname)s - %(message)s')
-
-setup_logging()
+logging_config.setup_logging()
 
 logger = logging.getLogger(__name__)
 

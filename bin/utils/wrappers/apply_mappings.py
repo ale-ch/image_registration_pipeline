@@ -21,7 +21,7 @@ def apply_mappings(mappings, moving_crops, checkpoint_dir):
     registered_crops = []
     channels = moving_crops[0][1].shape[2]
 
-    for i, (mapping_affine, mapping_diffeo) in enumerate(mappings):
+    for i, mapping_diffeo in enumerate(mappings):
         for ch in range(channels):
             mov_crop = moving_crops[i][1][:, :, ch]
             mov_crop_idx = moving_crops[i][0]
@@ -35,11 +35,10 @@ def apply_mappings(mappings, moving_crops, checkpoint_dir):
                 print(f"Loaded checkpoint for i={mov_crop_idx}")
                 continue
 
-            affine2 = apply_mapping(mapping_affine, mov_crop, method='cv2')
-            diffeo1 = apply_mapping(mapping_diffeo, affine2, method='dipy')
+            diffeo_img = apply_mapping(mapping_diffeo, mov_crop, method='dipy')
             
             # Save checkpoint
-            checkpoint_data = (mov_crop_idx + (ch,), diffeo1)
+            checkpoint_data = (mov_crop_idx + (ch,), diffeo_img)
             save_pickle(checkpoint_data, checkpoint_filename)
             print(f"Saved checkpoint for i={mov_crop_idx}")
             

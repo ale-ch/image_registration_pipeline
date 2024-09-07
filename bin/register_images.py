@@ -6,9 +6,11 @@ import pandas as pd
 import logging
 from skimage.io import imread 
 from utils.image_cropping import estimate_overlap
+from utils.image_cropping import estimate_overlap_2
 from utils.image_cropping import crop_2d_array_grid
 from utils.wrappers.create_checkpoint_dirs import create_checkpoint_dirs
 from utils.wrappers.compute_mappings import compute_mappings
+from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
 from utils.wrappers.apply_mappings import apply_mappings
 from utils.wrappers.export_image import export_image
 from utils.empty_folder import empty_folder
@@ -24,15 +26,15 @@ def register_images(input_path, output_path, fixed_image_path,
     logger.info(f'Output path: {output_path}')
     fixed_image = imread(fixed_image_path)
     moving_image = imread(input_path)
-    
-    if auto_overlap:
-        overlap_x, overlap_y = estimate_overlap(fixed_image, moving_image, overlap_factor=overlap_factor)
-    
+
     logger.debug(f"Overlap X: {overlap_x}")
     logger.debug(f"Overlap Y: {overlap_y}")
 
+    affine_mapping = compute_affine_mapping_cv2(fixed_image, moving_image)
+    affine_reg_image = apply_mapping(affine_mapping, moving_image, method='cv2')
+
     fixed_crops = crop_2d_array_grid(fixed_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
-    moving_crops = crop_2d_array_grid(moving_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
+    moving_crops = crop_2d_array_grid(affine_reg_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
 
     current_mappings_dir, current_registered_crops_dir = create_checkpoint_dirs(mappings_dir, registered_crops_dir, input_path)
     mappings = compute_mappings(fixed_crops=fixed_crops, moving_crops=moving_crops, checkpoint_dir=current_mappings_dir)

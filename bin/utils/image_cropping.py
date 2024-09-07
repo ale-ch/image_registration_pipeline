@@ -107,6 +107,29 @@ def estimate_overlap(fixed_image: np.ndarray, moving_image: np.ndarray, size: in
 
     return overlap_x, overlap_y
 
+def estimate_overlap_2(fixed_image: np.ndarray, moving_image: np.ndarray, size: int = 500):
+    """
+    Estimate the overlap between a fixed image and a moving image.
+
+    Parameters:
+        fixed_image (np.ndarray): The fixed image.
+        moving_image (np.ndarray): The moving image.
+        size (int, optional): Size of the crop for overlap estimation. Defaults to 500.
+        overlap_factor (float, optional): Factor to adjust the overlap. Defaults to 0.2.
+
+    Returns:
+        tuple: Estimated overlap dimensions (overlap_x, overlap_y).
+    """    
+    fixed_crop = crop_2d_array(fixed_image, crop_areas=(0, size, 0, size))
+    mov_crop = crop_2d_array(moving_image, crop_areas=(0, size, 0, size))
+
+    affine_mapping = compute_affine_mapping_cv2(fixed_crop, mov_crop)
+    reg_crop = apply_mapping(affine_mapping, mov_crop, method='cv2')[:, :, 2]
+
+    top_width, bottom_width, left_width, right_width = compute_border_width(reg_crop, proportion=False)
+
+    return top_width, bottom_width, left_width, right_width
+
 def crop_2d_array(array, crop_areas, crop_indices=None):
     """
     Crop a 2D NumPy array into specified areas.

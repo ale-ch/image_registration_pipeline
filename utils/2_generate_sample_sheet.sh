@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Navigate to the directory containing script1.py
+cd "$(dirname "$0")/../utils/generate_sample_sheet"
+
+# Set the PYTHONPATH to include the directory with script2.py
+export PYTHONPATH="$(pwd)/../../utils"
+
 # Function to display usage
 print_required_args() {
     echo "Required:"
@@ -8,9 +14,10 @@ print_required_args() {
 
 print_optional_args() {
     echo "Optional:"
-    echo "  --export-path /path/to/file  Path to export file (default: <main_dir>/logs/io/sample_sheet_current.csv)"
-    echo "  --make-dirs true|false       Create directories if they don't exist (default: false)"
+    echo "  --export-path /path/to/file  Path to export file (default: <main_dir>/logs/io/<filename>.csv)"
+    echo "  --make-dirs true|false       Create directories if they don't exist (default: true)"
     echo "  --input-dir-conv /path       Input directory for conversion (default: <main_dir>/data/input/image_conversion)"
+    echo "  --output-dir-conv /path      Output directory for conversion (default: <main_dir>/data/output/image_conversion)"
     echo "  --output-dir-reg /path       Output directory for registration (default: <main_dir>/data/output/image_registration)"
 }
 
@@ -28,6 +35,7 @@ while [[ "$#" -gt 0 ]]; do
         --export-path) export_path="$2"; shift ;;
         --make-dirs) make_dirs="$2"; shift ;;
         --input-dir-conv) input_dir_conv="$2"; shift;;
+        --output-dir-conv) output_dir_conv="$2"; shift;;
         --output-dir-reg) output_dir_reg="$2"; shift;;
         *) usage ;;
     esac
@@ -46,8 +54,6 @@ if [ ! -d "$main_dir" ]; then
     exit 1
 fi
 
-# main_dir='/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline'
-
 if [ -z "${export_path}" ]; then
     export_path="${main_dir}/logs/io/sample_sheet_current.csv"
 fi
@@ -63,7 +69,10 @@ sample_sheet_dir="${logs_dir}/io/"
 if [ -z "${input_dir_conv}" ]; then
     input_dir_conv="${input_dir}/image_conversion"
 fi
-output_dir_conv="${output_dir}/image_conversion"
+
+if [ -z "${output_dir_conv}" ]; then
+    output_dir_conv="${output_dir}/image_conversion"
+fi
 
 ## Image registration
 input_dir_reg="${output_dir_conv}"
@@ -75,7 +84,7 @@ registered_crops_dir="${main_dir}/data/registered_crops"
 
 # Create sample sheet for image conversion
 echo "Creating conv_sample_sheet.csv"
-python ./bin/utils/generate_sample_sheet/update_io.py \
+python bin/utils/generate_sample_sheet/update_io.py \
     --input-dir "${input_dir_conv}" \
     --output-dir "${output_dir_conv}" \
     --input-ext ".nd2" \
@@ -88,13 +97,13 @@ python ./bin/utils/generate_sample_sheet/update_io.py \
 
 # Assign the fixed image to each patient id
 echo "Assigning fixed_image_path to conv_sample_sheet.csv"
-python ./bin/utils/generate_sample_sheet/assign_fixed_image.py \
+python bin/utils/generate_sample_sheet/assign_fixed_image.py \
     --samp-sheet-path "${logs_dir}/io/conv_sample_sheet.csv" \
     --export-path "${logs_dir}/io/conv_sample_sheet.csv"
 
 # Create sample sheet for image registration
 echo "Creating reg_sample_sheet.csv"
-python ./bin/utils/generate_sample_sheet/update_io.py \
+python bin/utils/generate_sample_sheet/update_io.py \
     --input-dir "${input_dir_conv}" \
     --output-dir "${output_dir_reg}" \
     --input-ext ".nd2" \
@@ -105,14 +114,14 @@ python ./bin/utils/generate_sample_sheet/update_io.py \
     --export-path "${logs_dir}/io/reg_sample_sheet.csv" \
     --make-dirs
 
-python ./bin/utils/generate_sample_sheet/remove_columns.py \
+python bin/utils/generate_sample_sheet/remove_columns.py \
     --csv-file-path "${logs_dir}/io/reg_sample_sheet.csv" \
     --column input_path_reg patient_id \
     --export-path "${logs_dir}/io/reg_sample_sheet.csv"
 
 # Join I/O sheets
 echo "Joining "${logs_dir}/io/conv_sample_sheet.csv" and "${logs_dir}/io/reg_sample_sheet.csv""
-python ./bin/utils/generate_sample_sheet/join_samp_sheets.py \
+python bin/utils/generate_sample_sheet/join_samp_sheets.py \
     --samp-sheets-paths "${logs_dir}/io/conv_sample_sheet.csv" "${logs_dir}/io/reg_sample_sheet.csv" \
     --key-col-name "patient_id" \
     --filter-pending \

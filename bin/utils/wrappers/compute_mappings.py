@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+
 import os
 from utils.pickle_utils import load_pickle, save_pickle
-from utils.image_mapping import apply_mapping, compute_affine_mapping_cv2, compute_diffeomorphic_mapping_dipy
+from utils.image_mapping import compute_diffeomorphic_mapping_dipy
 
-def compute_mappings(fixed_crops, moving_crops, checkpoint_dir):
+def compute_mappings(fixed_crops, moving_crops, checkpoint_dir, max_workers):
     """
     Compute affine and diffeomorphic mappings between fixed and moving image crops and save/load results from checkpoints.
 

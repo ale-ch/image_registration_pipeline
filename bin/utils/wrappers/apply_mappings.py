@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 
 from utils.image_mapping import apply_mapping

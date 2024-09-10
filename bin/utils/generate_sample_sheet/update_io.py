@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 
+import sys
+import os
+# Add the parent directory of the current script to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'utils')))
+# import utils.logging_config as logging_config
+import logging_config
+
 import os
 import re
 import pandas as pd
 import argparse
 import logging
 import datetime
-import utils.logging_config as logging_config
+
 
 logging_config.setup_logging()
 

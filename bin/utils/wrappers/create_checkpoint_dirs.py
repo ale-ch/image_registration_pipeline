@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 
 def remove_file_extension(filename):

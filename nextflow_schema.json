@@ -29,12 +29,22 @@
                 "main_dir": {
                     "type": "string",
                     "description": "Main directory for the pipeline.",
-                    "examples": ["/hpcnfs/scratch/DIMA/chiodin/tests/img_reg_pipeline"]
+                    "examples": ["/path/to/dir"]
                 },
                 "sample_sheet_path": {
                     "type": "string",
                     "description": "Path to the sample sheet CSV file.",
-                    "examples": ["example_sampsheet.csv"]
+                    "examples": ["/path/to/file.csv"]
+                },
+                "output_dir_conv": {
+                    "type": "string",
+                    "description": "Publish directory for conversion.",
+                    "examples": ["/path/to/dir"]
+                },
+                "output_dir_reg": {
+                    "type": "string",
+                    "description": "Publish directory for registration.",
+                    "examples": ["/path/to/dir"]
                 },
                 "tilex": {
                     "type": "integer",
@@ -76,17 +86,10 @@
                     "description": "Vertical overlap for image registration.",
                     "examples": [300]
                 },
-                "overlap_factor": {
-                    "type": "number",
-                    "description": "Overlap factor for image registration.",
-                    "minimum": 0,
-                    "maximum": 0.7,
-                    "examples": [0.3]
-                },
-                "auto_overlap": {
-                    "type": "boolean",
-                    "description": "Auto overlap setting for image registration.",
-                    "examples": [true, false]
+                "max_workers": {
+                    "type": "integer",
+                    "description": "Number of cores used by the process for parallelization.",
+                    "examples": [4]
                 },
                 "delete_checkpoints": {
                     "type": "boolean",

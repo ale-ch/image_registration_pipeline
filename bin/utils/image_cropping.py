@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np
 
 from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+import sys
+import os 
+# Add the parent directory of the current script to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'utils')))
+
 import pandas as pd
 import argparse
 

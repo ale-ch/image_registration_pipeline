@@ -4,7 +4,7 @@
 
 process register_images {
     cpus 5
-    memory '10G'
+    memory '20G'
     publishDir "${params.output_dir_reg}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "registration"
@@ -20,8 +20,7 @@ process register_images {
         val(params.crop_width_y),
         val(params.overlap_x),
         val(params.overlap_y),
-        val(params.overlap_factor),
-        val(params.auto_overlap),
+        val(params.max_workers),
         val(params.delete_checkpoints),
         val(params.logs_dir)
 
@@ -38,11 +37,9 @@ process register_images {
             --crop-width-y "${params.crop_width_y}" \
             --overlap-x "${params.overlap_x}" \
             --overlap-y "${params.overlap_y}" \
-            --auto-overlap \
+            --max-workers ${params.max_workers} \
             --delete-checkpoints \
-            --overlap-factor "${params.overlap_factor}" \
             --logs-dir "${params.logs_dir}"
     fi
     """
 }
-

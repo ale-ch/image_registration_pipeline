@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import pickle
 
 def save_pickle(object, path):

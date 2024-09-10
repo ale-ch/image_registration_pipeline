@@ -28,7 +28,6 @@ def get_registration_params() {
             params.crop_width_y,         // Crop width in y-direction
             params.overlap_x,            // Overlap in x-direction
             params.overlap_y,            // Overlap in y-direction
-            params.max_workers,
             params.delete_checkpoints,   // Flag to delete intermediate checkpoints
             params.logs_dir              // Directory for storing logs
         )

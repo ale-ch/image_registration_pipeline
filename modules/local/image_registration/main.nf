@@ -3,7 +3,7 @@
 */
 
 process register_images {
-    cpus 5
+    cpus 10
     memory '20G'
     publishDir "${params.output_dir_reg}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"

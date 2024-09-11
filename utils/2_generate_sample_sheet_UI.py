@@ -47,6 +47,34 @@ def select_main_dir():
         main_dir_entry.delete(0, tk.END)
         main_dir_entry.insert(0, dir_path)
 
+# Function to select export path
+def select_export_path():
+    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+    if file_path:
+        export_path_entry.delete(0, tk.END)
+        export_path_entry.insert(0, file_path)
+
+# Function to select input directory for conversion
+def select_input_dir_conv():
+    dir_path = filedialog.askdirectory()
+    if dir_path:
+        input_dir_conv_entry.delete(0, tk.END)
+        input_dir_conv_entry.insert(0, dir_path)
+
+# Function to select output directory for conversion
+def select_output_dir_conv():
+    dir_path = filedialog.askdirectory()
+    if dir_path:
+        output_dir_conv_entry.delete(0, tk.END)
+        output_dir_conv_entry.insert(0, dir_path)
+
+# Function to select output directory for registration
+def select_output_dir_reg():
+    dir_path = filedialog.askdirectory()
+    if dir_path:
+        output_dir_reg_entry.delete(0, tk.END)
+        output_dir_reg_entry.insert(0, dir_path)
+
 # Create the main window
 root = tk.Tk()
 root.title("Sample Sheet Generator")
@@ -57,7 +85,7 @@ main_dir_entry = tk.Entry(root, width=50)
 main_dir_entry.grid(row=0, column=1, padx=10, pady=5)
 tk.Button(root, text="Browse", command=select_main_dir).grid(row=0, column=2)
 
-tk.Label(root, text="Export Path (Optional)").grid(row=1, column=0, sticky="e")
+tk.Label(root, text="Export Path [/path/to/file.csv] (Optional)").grid(row=1, column=0, sticky="e")
 export_path_entry = tk.Entry(root, width=50)
 export_path_entry.grid(row=1, column=1, padx=10, pady=5)
 
@@ -68,17 +96,20 @@ tk.OptionMenu(root, make_dirs_var, "true", "false").grid(row=2, column=1, padx=1
 tk.Label(root, text="Input Dir Conv (Optional)").grid(row=3, column=0, sticky="e")
 input_dir_conv_entry = tk.Entry(root, width=50)
 input_dir_conv_entry.grid(row=3, column=1, padx=10, pady=5)
+tk.Button(root, text="Browse", command=select_input_dir_conv).grid(row=3, column=2)
 
 tk.Label(root, text="Output Dir Conv (Optional)").grid(row=4, column=0, sticky="e")
 output_dir_conv_entry = tk.Entry(root, width=50)
 output_dir_conv_entry.grid(row=4, column=1, padx=10, pady=5)
+tk.Button(root, text="Browse", command=select_output_dir_conv).grid(row=4, column=2)
 
 tk.Label(root, text="Output Dir Reg (Optional)").grid(row=5, column=0, sticky="e")
 output_dir_reg_entry = tk.Entry(root, width=50)
 output_dir_reg_entry.grid(row=5, column=1, padx=10, pady=5)
+tk.Button(root, text="Browse", command=select_output_dir_reg).grid(row=5, column=2)
 
 # Run button
-tk.Button(root, text="Run", command=run_process, bg="green", fg="white").grid(row=6, column=0, columnspan=3, pady=20)
+tk.Button(root, text="Run", command=run_process, bg="green", fg="black").grid(row=6, column=0, columnspan=3, pady=20)
 
 # Start the main loop
 root.mainloop()

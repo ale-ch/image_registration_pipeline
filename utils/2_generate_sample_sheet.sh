@@ -9,16 +9,16 @@ export PYTHONPATH="$(pwd)/../../utils"
 # Function to display usage
 print_required_args() {
     echo "Required:"
-    echo "  --main-dir /path/to/dir      Main directory path"
+    echo "  --work-dir /path/to/dir      Main directory path"
 }
 
 print_optional_args() {
     echo "Optional:"
-    echo "  --export-path /path/to/file  Path to export file (default: <main_dir>/logs/io/<filename>.csv)"
+    echo "  --export-path /path/to/file  Path to export file (default: <work_dir>/logs/io/<filename>.csv)"
     echo "  --make-dirs true|false       Create directories if they don't exist (default: true)"
-    echo "  --input-dir-conv /path       Input directory for conversion (default: <main_dir>/data/input/image_conversion)"
-    echo "  --output-dir-conv /path      Output directory for conversion (default: <main_dir>/data/output/image_conversion)"
-    echo "  --output-dir-reg /path       Output directory for registration (default: <main_dir>/data/output/image_registration)"
+    echo "  --input-dir-conv /path       Input directory for conversion (default: <work_dir>/data/input/image_conversion)"
+    echo "  --output-dir-conv /path      Output directory for conversion (default: <work_dir>/data/output/image_conversion)"
+    echo "  --output-dir-reg /path       Output directory for registration (default: <work_dir>/data/output/image_registration)"
 }
 
 usage() {
@@ -31,7 +31,7 @@ usage() {
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --main-dir) main_dir="$2"; shift ;;
+        --work-dir) work_dir="$2"; shift ;;
         --export-path) export_path="$2"; shift ;;
         --make-dirs) make_dirs="$2"; shift ;;
         --input-dir-conv) input_dir_conv="$2"; shift;;
@@ -43,24 +43,24 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Validate required parameters
-if [ -z "$main_dir" ]; then
-    echo "Error: --main-dir is required"
+if [ -z "$work_dir" ]; then
+    echo "Error: --work-dir is required"
     usage
 fi
 
-# Check if main_dir exists
-if [ ! -d "$main_dir" ]; then
-    echo "Error: main_dir does not exist: $main_dir"
+# Check if work_dir exists
+if [ ! -d "$work_dir" ]; then
+    echo "Error: work_dir does not exist: $work_dir"
     exit 1
 fi
 
 if [ -z "${export_path}" ]; then
-    export_path="${main_dir}/logs/io/sample_sheet_current.csv"
+    export_path="${work_dir}/logs/io/sample_sheet_current.csv"
 fi
 
-input_dir="${main_dir}/data/input"
-output_dir="${main_dir}/data/output"
-logs_dir="${main_dir}/logs"
+input_dir="${work_dir}/data/input"
+output_dir="${work_dir}/data/output"
+logs_dir="${work_dir}/logs"
 backup_dir="${logs_dir}/io/backups"
 sample_sheet_dir="${logs_dir}/io/"
 
@@ -79,8 +79,8 @@ input_dir_reg="${output_dir_conv}"
 if [ -z "${output_dir_reg}" ]; then
     output_dir_reg="${output_dir}/image_registration"
 fi
-mappings_dir="${main_dir}/data/mappings"
-registered_crops_dir="${main_dir}/data/registered_crops"
+mappings_dir="${work_dir}/data/mappings"
+registered_crops_dir="${work_dir}/data/registered_crops"
 
 # Create sample sheet for image conversion
 echo "Creating conv_sample_sheet.csv"

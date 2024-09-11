@@ -1,0 +1,42 @@
+# Base image
+FROM debian:12.5
+
+# Install system dependencies in one step to reduce layers
+RUN apt-get update && \
+    apt-get install -y \
+        build-essential \
+        wget \
+        tabix \
+        libreadline-dev \
+        libcairo2-dev \
+        git \
+        procps \
+        g++ \
+        python3 \
+        python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up Miniconda
+ENV CONDA_DIR /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py39_22.11.1-1-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    $CONDA_DIR/bin/conda init bash
+
+# Put conda in PATH so we can use conda activate
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+# Install Bioconda packages (e.g., bftools)
+RUN conda install bioconda::bftools -y
+
+# Install Nextflow (optional: specify a version if needed)
+# RUN curl -s https://get.nextflow.io | bash && \
+#     mv nextflow /usr/local/bin/
+
+
+# Copy the requirements.txt file for Python dependencies
+COPY requirements.txt /image_registration_pipeline/requirements.txt
+
+# Install Python dependencies via pip
+RUN pip3 install -r /image_registration_pipeline/requirements.txt

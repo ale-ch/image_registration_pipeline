@@ -22,13 +22,13 @@
             "type": "object",
             "description": "Define user input parameters that can be set through the command line.",
             "required": [
-                "main_dir",
+                "work_dir",
                 "sample_sheet_path"
             ],
             "properties": {
-                "main_dir": {
+                "work_dir": {
                     "type": "string",
-                    "description": "Main directory for the pipeline.",
+                    "description": "Working directory for the pipeline (not nextflow's 'work' directory).",
                     "examples": ["/path/to/dir"]
                 },
                 "sample_sheet_path": {

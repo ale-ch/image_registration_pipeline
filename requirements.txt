@@ -1,6 +1,6 @@
 opencv-python==4.10.0.82
 dipy==1.9.0
-numpy @ file:///croot/numpy_and_numpy_base_1708638617955/work/dist/numpy-1.26.4-cp312-cp312-linux_x86_64.whl#sha256=1d700f51d8b4fa684d858c9e3b56b1656bc5c82b6b79ff08d4e3b491c430059f
+numpy==1.26.4
 pandas==2.2.2
-tifffile @ file:///work/perseverance-python-buildout/croot/tifffile_1698866341575/work
+tifffile==2023.4.12
 scikit-image==0.24.0

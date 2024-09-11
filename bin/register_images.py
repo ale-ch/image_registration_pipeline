@@ -6,7 +6,8 @@ import logging
 from skimage.io import imread 
 from utils.image_cropping import crop_2d_array_grid
 from utils.wrappers.create_checkpoint_dirs import create_checkpoint_dirs
-from utils.wrappers.compute_mappings import compute_mappings
+# from utils.wrappers.compute_mappings import compute_mappings
+from utils.wrappers.compute_mappings_parallel import compute_mappings
 from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
 from utils.wrappers.apply_mappings import apply_mappings
 from utils.wrappers.export_image import export_image
@@ -34,7 +35,7 @@ def register_images(input_path, output_path, fixed_image_path,
     moving_crops = crop_2d_array_grid(affine_reg_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
 
     current_mappings_dir, current_registered_crops_dir = create_checkpoint_dirs(mappings_dir, registered_crops_dir, input_path)
-    mappings = compute_mappings(fixed_crops=fixed_crops, moving_crops=moving_crops, checkpoint_dir=current_mappings_dir)
+    mappings = compute_mappings(fixed_crops=fixed_crops, moving_crops=moving_crops, checkpoint_dir=current_mappings_dir, max_workers=max_workers)
     registered_crops = apply_mappings(mappings=mappings, moving_crops=moving_crops, checkpoint_dir=current_registered_crops_dir)
     export_image(registered_crops, overlap_x, overlap_y, output_path)
     logger.info(f'Image {input_path} processed successfully.')
@@ -77,6 +78,8 @@ if __name__ == "__main__":
                         help='Overlap of each crop along x axis.')
     parser.add_argument('--overlap-y', type=int, 
                         help='Overlap of each crop along y axis.')
+    parser.add_argument('--max-workers', type=int, 
+                        help='Maximum number of CPUs used by the process.')
     parser.add_argument('--delete-checkpoints', action='store_false', 
                         help='Delete image mappings and registered crops files after processing.')
     parser.add_argument('--logs-dir', type=str, required=True, 
@@ -84,4 +87,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     main(args)
-    

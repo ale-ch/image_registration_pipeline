@@ -86,6 +86,11 @@
                     "description": "Vertical overlap for image registration.",
                     "examples": [300]
                 },
+                "max_workers": {
+                    "type": "integer",
+                    "description": "Number of cores used by the process for parallelization.",
+                    "examples": [4]
+                },
                 "delete_checkpoints": {
                     "type": "boolean",
                     "description": "Setting to delete checkpoints.",

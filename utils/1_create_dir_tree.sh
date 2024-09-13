@@ -2,15 +2,15 @@
 
 # Function to print usage
 usage() {
-  echo "Usage: $0 --main-dir /path/to/main_dir"
+  echo "Usage: $0 --work-dir /path/to/work_dir"
   exit 1
 }
 
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --main-dir)
-      main_dir="$2"
+    --work-dir)
+      work_dir="$2"
       shift 2
       ;;
     *)
@@ -20,29 +20,29 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
-# Check if main_dir is provided and valid
-if [ -z "${main_dir}" ]; then
-  echo "Error: --main-dir is required"
+# Check if work_dir is provided and valid
+if [ -z "${work_dir}" ]; then
+  echo "Error: --work-dir is required"
   usage
 fi
 
-if [ ! -d "${main_dir}" ]; then
-  echo "Error: main_dir does not exist: ${main_dir}"
+if [ ! -d "${work_dir}" ]; then
+  echo "Error: work_dir does not exist: ${work_dir}"
   exit 1
 fi
 
-# Define other directories based on main_dir
-input_dir="${main_dir}/data/input"
-output_dir="${main_dir}/data/output"
-logs_dir="${main_dir}/logs"
+# Define other directories based on work_dir
+input_dir="${work_dir}/data/input"
+output_dir="${work_dir}/data/output"
+logs_dir="${work_dir}/logs"
 backup_dir="${logs_dir}/io/backups"
 sample_sheet_dir="${logs_dir}/io/"
 input_dir_conv="${input_dir}/image_conversion"
 output_dir_conv="${output_dir}/image_conversion"
 input_dir_reg="${input_dir}/image_registration"
 output_dir_reg="${output_dir}/image_registration"
-mappings_dir="${main_dir}/data/mappings"
-registered_crops_dir="${main_dir}/data/registered_crops"
+mappings_dir="${work_dir}/data/mappings"
+registered_crops_dir="${work_dir}/data/registered_crops"
 
 # Create directories if they don't exist
 mkdir -p "${input_dir}"

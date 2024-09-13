@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-
+import tifffile
 from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
 
 def compute_border_width(arr: np.ndarray, proportion=True):
@@ -259,3 +259,47 @@ def crop_2d_array_grid(image, crop_width_x: int = None, crop_width_y: int = None
     crops = crop_2d_array(array=image, crop_areas=crop_areas, crop_indices=crop_indices)
 
     return crops
+
+def load_tiff_region(path, loading_region):
+    # Open the TIFF file
+    with tifffile.TiffFile(path) as tif:
+        # Define the region you want to read
+        # region = (slice(y_start, y_end), slice(x_start, x_end))
+        # Example: reading a 10000 pixel region starting from (50, 50)
+        start_row, end_row, start_col, end_col  = loading_region[0], loading_region[1], loading_region[2], loading_region[3]
+        region = (slice(start_row, end_row), slice(start_col, end_col))
+    
+        # Read the specified region
+        loaded_region = []
+
+        for page in tif.pages:
+            # Read the region from each page (channel)
+            channel = page.asarray()[region[0], region[1]]
+            loaded_region.append(channel)
+        
+        # Stack the loaded regions along a new axis to form a multi-channel image
+        multi_channel_image = np.stack(loaded_region, axis=-1)
+    
+    return multi_channel_image
+
+def zero_pad_arrays(arr1, arr2):
+    # Get the shapes of both arrays
+    shape1 = arr1.shape
+    shape2 = arr2.shape
+    
+    # Determine the target shape by taking the maximum of each dimension
+    target_shape = tuple(max(shape1[i], shape2[i]) for i in range(len(shape1)))
+    
+    # Zero pad both arrays to the target shape
+    padded_arr1 = np.zeros(target_shape)
+    padded_arr2 = np.zeros(target_shape)
+    
+    # Fill the padded arrays with original array values
+    padded_arr1[tuple(slice(0, s) for s in shape1)] = arr1
+    padded_arr2[tuple(slice(0, s) for s in shape2)] = arr2
+    
+    return padded_arr1, padded_arr2
+
+
+
+

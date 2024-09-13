@@ -4,10 +4,12 @@ import argparse
 import os 
 import logging
 from skimage.io import imread 
+import tifffile
 from utils.image_cropping import crop_2d_array_grid
+from utils.image_cropping import load_tiff_region
+from utils.image_cropping import zero_pad_arrays
 from utils.wrappers.create_checkpoint_dirs import create_checkpoint_dirs
-# from utils.wrappers.compute_mappings import compute_mappings
-from utils.wrappers.compute_mappings_parallel import compute_mappings
+from utils.wrappers.compute_mappings import compute_mappings
 from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
 from utils.wrappers.apply_mappings import apply_mappings
 from utils.wrappers.export_image import export_image
@@ -18,15 +20,35 @@ logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
 def register_images(input_path, output_path, fixed_image_path, 
+                    loading_region,
                     mappings_dir, registered_crops_dir,  
                     crop_width_x, crop_width_y, overlap_x, overlap_y, 
                     delete_checkpoints, max_workers):
+    
     logger.info(f'Output path: {output_path}')
-    fixed_image = imread(fixed_image_path)
-    moving_image = imread(input_path)
+    
+    # fixed_image = load_tiff_region(fixed_image_path, loading_region[-4:])
+    # moving_image = load_tiff_region(input_path, loading_region[:4])
 
-    logger.debug(f"Overlap X: {overlap_x}")
-    logger.debug(f"Overlap Y: {overlap_y}")
+    fixed_image_raw = imread(fixed_image_path)
+    moving_image_raw = imread(input_path)
+
+    fixed_image, moving_image = zero_pad_arrays(fixed_image_raw, moving_image_raw)
+
+    # with tifffile.TiffFile(input_path) as tif:
+    #     moving_image_full_shape = tif.pages[0].shape  # Get the shape of the first page
+    # 
+    # with tifffile.TiffFile(fixed_image_path) as tif:
+    #     fixed_image_full_shape = tif.pages[0].shape  # Get the shape of the first page
+    # logger.debug(f"Loading region: {loading_region}")
+    # logger.debug(f"Loading region fixed image {loading_region[-4:]}.")
+    # logger.debug(f"Loading region moving image {loading_region[:4]}.")
+
+    logger.debug(f"Raw fixed image shape: {fixed_image_raw.shape}")
+    logger.debug(f"Raw moving image shape: {moving_image_raw.shape}")
+     
+    logger.debug(f"Padded fixed image shape: {fixed_image.shape}")
+    logger.debug(f"Padded moving image shape: {moving_image.shape}")
 
     affine_mapping = compute_affine_mapping_cv2(fixed_image, moving_image)
     affine_reg_image = apply_mapping(affine_mapping, moving_image, method='cv2')
@@ -35,8 +57,8 @@ def register_images(input_path, output_path, fixed_image_path,
     moving_crops = crop_2d_array_grid(affine_reg_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
 
     current_mappings_dir, current_registered_crops_dir = create_checkpoint_dirs(mappings_dir, registered_crops_dir, input_path)
-    mappings = compute_mappings(fixed_crops=fixed_crops, moving_crops=moving_crops, checkpoint_dir=current_mappings_dir, max_workers=max_workers)
-    registered_crops = apply_mappings(mappings=mappings, moving_crops=moving_crops, checkpoint_dir=current_registered_crops_dir)
+    mappings = compute_mappings(fixed_crops, moving_crops, current_mappings_dir, max_workers)
+    registered_crops = apply_mappings(mappings, moving_crops, current_registered_crops_dir)
     export_image(registered_crops, overlap_x, overlap_y, output_path)
     logger.info(f'Image {input_path} processed successfully.')
 
@@ -46,6 +68,30 @@ def register_images(input_path, output_path, fixed_image_path,
         empty_folder(current_registered_crops_dir)
         logger.info(f'Content deleted successfully: {current_registered_crops_dir}')
 
+
+# def register_images(input_path, output_path, fixed_image_path, 
+#             loading_region,
+#             mappings_dir, registered_crops_dir,  
+#             crop_width_x, crop_width_y, overlap_x, overlap_y, 
+#             delete_checkpoints, max_workers):
+#     
+#     logger.info(f'Output path: {output_path}')
+#     
+#     fixed_image_full = imread(fixed_image_path)
+#     moving_image_full = imread(input_path)
+# 
+#     fixed_image = load_tiff_region(fixed_image_path, loading_region[-4:])
+#     moving_image = load_tiff_region(input_path, loading_region[:4])
+# 
+#     logger.debug(f"Full fixed image shape: {fixed_image_full.shape}")
+#     logger.debug(f"Full moving image shape: {moving_image_full.shape}")
+# 
+#     logger.debug(f"Loading regions {loading_region}.")
+# 
+#     logger.debug(f"Fixed image shape: {fixed_image.shape}")
+#     logger.debug(f"Moving image shape: {moving_image.shape}")
+
+
 def main(args):
     handler = logging.FileHandler(os.path.join(args.logs_dir, 'image_registration.log'))
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -53,6 +99,7 @@ def main(args):
     logger.addHandler(handler)
 
     register_images(args.input_path, args.output_path, args.fixed_image_path,
+                    args.loading_region,
                     args.mappings_dir, args.registered_crops_dir, 
                     args.crop_width_x, args.crop_width_y, 
                     args.overlap_x, args.overlap_y, 
@@ -65,7 +112,9 @@ if __name__ == "__main__":
     parser.add_argument('--output-path', type=str, required=True, 
                         help='Path to registered image.')
     parser.add_argument('--fixed-image-path', type=str, required=True, 
-                        help='Path to fixed image')
+                        help='Path to fixed image'),
+    parser.add_argument('--loading-region', type=int, required=True, nargs=8,
+                        help='Image region to load. Required values: start_row, end_row, start_col, end_col')
     parser.add_argument('--mappings-dir', type=str, required=True, 
                         help='Root directory to save mappings.')
     parser.add_argument('--registered-crops-dir', type=str, required=True, 
@@ -78,12 +127,13 @@ if __name__ == "__main__":
                         help='Overlap of each crop along x axis.')
     parser.add_argument('--overlap-y', type=int, 
                         help='Overlap of each crop along y axis.')
-    parser.add_argument('--max-workers', type=int, 
+    parser.add_argument('--max-workers', type=int,
                         help='Maximum number of CPUs used by the process.')
     parser.add_argument('--delete-checkpoints', action='store_false', 
                         help='Delete image mappings and registered crops files after processing.')
     parser.add_argument('--logs-dir', type=str, required=True, 
                         help='Path to directory where log files will be stored.')
+    
     args = parser.parse_args()
     
     main(args)

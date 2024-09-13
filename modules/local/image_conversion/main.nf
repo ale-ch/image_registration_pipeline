@@ -17,6 +17,14 @@ process convert_fixed_images {
         val(output_path_conv),
         val(output_path_reg),
         val(fixed_image_path),
+        val(start_row),
+        val(end_row),
+        val(start_col),
+        val(end_col),
+        val(start_row_fixed),
+        val(end_row_fixed),
+        val(start_col_fixed),
+        val(end_col_fixed),
         val(params.tilex),
         val(params.tiley),
         val(params.pyramid_resolutions),
@@ -51,6 +59,14 @@ process convert_moving_images {
         val(output_path_conv),
         val(output_path_reg),
         val(fixed_image_path),
+        val(start_row),
+        val(end_row),
+        val(start_col),
+        val(end_col),
+        val(start_row_fixed),
+        val(end_row_fixed),
+        val(start_col_fixed),
+        val(end_col_fixed),
         val(params.tilex),
         val(params.tiley),
         val(params.pyramid_resolutions),
@@ -60,7 +76,16 @@ process convert_moving_images {
     tuple val(fixed_image),
         val(output_path_conv),
         val(output_path_reg),
-        val(fixed_image_path)
+        val(fixed_image_path),
+        val(start_row),
+        val(end_row),
+        val(start_col),
+        val(end_col),
+        val(start_row_fixed),
+        val(end_row_fixed),
+        val(start_col_fixed),
+        val(end_col_fixed)
+
 
     script:
     """

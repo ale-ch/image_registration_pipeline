@@ -4,7 +4,6 @@ import argparse
 import os 
 import logging
 from skimage.io import imread 
-import tifffile
 from utils.image_cropping import crop_2d_array_grid
 from utils.image_cropping import load_tiff_region
 from utils.image_cropping import zero_pad_arrays
@@ -20,29 +19,16 @@ logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
 def register_images(input_path, output_path, fixed_image_path, 
-                    loading_region,
                     mappings_dir, registered_crops_dir,  
                     crop_width_x, crop_width_y, overlap_x, overlap_y, 
                     delete_checkpoints, max_workers):
     
     logger.info(f'Output path: {output_path}')
-    
-    # fixed_image = load_tiff_region(fixed_image_path, loading_region[-4:])
-    # moving_image = load_tiff_region(input_path, loading_region[:4])
 
     fixed_image_raw = imread(fixed_image_path)
     moving_image_raw = imread(input_path)
 
     fixed_image, moving_image = zero_pad_arrays(fixed_image_raw, moving_image_raw)
-
-    # with tifffile.TiffFile(input_path) as tif:
-    #     moving_image_full_shape = tif.pages[0].shape  # Get the shape of the first page
-    # 
-    # with tifffile.TiffFile(fixed_image_path) as tif:
-    #     fixed_image_full_shape = tif.pages[0].shape  # Get the shape of the first page
-    # logger.debug(f"Loading region: {loading_region}")
-    # logger.debug(f"Loading region fixed image {loading_region[-4:]}.")
-    # logger.debug(f"Loading region moving image {loading_region[:4]}.")
 
     logger.debug(f"Raw fixed image shape: {fixed_image_raw.shape}")
     logger.debug(f"Raw moving image shape: {moving_image_raw.shape}")
@@ -68,30 +54,6 @@ def register_images(input_path, output_path, fixed_image_path,
         empty_folder(current_registered_crops_dir)
         logger.info(f'Content deleted successfully: {current_registered_crops_dir}')
 
-
-# def register_images(input_path, output_path, fixed_image_path, 
-#             loading_region,
-#             mappings_dir, registered_crops_dir,  
-#             crop_width_x, crop_width_y, overlap_x, overlap_y, 
-#             delete_checkpoints, max_workers):
-#     
-#     logger.info(f'Output path: {output_path}')
-#     
-#     fixed_image_full = imread(fixed_image_path)
-#     moving_image_full = imread(input_path)
-# 
-#     fixed_image = load_tiff_region(fixed_image_path, loading_region[-4:])
-#     moving_image = load_tiff_region(input_path, loading_region[:4])
-# 
-#     logger.debug(f"Full fixed image shape: {fixed_image_full.shape}")
-#     logger.debug(f"Full moving image shape: {moving_image_full.shape}")
-# 
-#     logger.debug(f"Loading regions {loading_region}.")
-# 
-#     logger.debug(f"Fixed image shape: {fixed_image.shape}")
-#     logger.debug(f"Moving image shape: {moving_image.shape}")
-
-
 def main(args):
     handler = logging.FileHandler(os.path.join(args.logs_dir, 'image_registration.log'))
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -99,7 +61,6 @@ def main(args):
     logger.addHandler(handler)
 
     register_images(args.input_path, args.output_path, args.fixed_image_path,
-                    args.loading_region,
                     args.mappings_dir, args.registered_crops_dir, 
                     args.crop_width_x, args.crop_width_y, 
                     args.overlap_x, args.overlap_y, 
@@ -112,9 +73,7 @@ if __name__ == "__main__":
     parser.add_argument('--output-path', type=str, required=True, 
                         help='Path to registered image.')
     parser.add_argument('--fixed-image-path', type=str, required=True, 
-                        help='Path to fixed image'),
-    parser.add_argument('--loading-region', type=int, required=True, nargs=8,
-                        help='Image region to load. Required values: start_row, end_row, start_col, end_col')
+                        help='Path to fixed image')
     parser.add_argument('--mappings-dir', type=str, required=True, 
                         help='Root directory to save mappings.')
     parser.add_argument('--registered-crops-dir', type=str, required=True, 

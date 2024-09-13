@@ -13,15 +13,7 @@ def parse_csv(csv_file_path) {
                 input_path_reg  : row.input_path_reg,    // Input path for registration
                 output_path_reg : row.output_path_reg,   // Output path for registration
                 registered      : row.registered,        // Registration status
-                fixed_image     : row.fixed_image,        // Flag for fixed image
-                start_row       : row.start_row,
-                end_row         : row.end_row,
-                start_col       : row.start_col,
-                end_col         : row.end_col,
-                start_row_fixed : row.start_row_fixed,
-                end_row_fixed   : row.end_row_fixed,
-                start_col_fixed : row.start_col_fixed,
-                end_col_fixed   : row.end_col_fixed
+                fixed_image     : row.fixed_image        // Flag for fixed image
             ]
         }
 }

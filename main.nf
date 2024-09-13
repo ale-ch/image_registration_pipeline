@@ -34,15 +34,7 @@ workflow {
             row.input_path_conv, 
             row.output_path_conv,  
             row.output_path_reg, 
-            row.fixed_image_path,
-            row.start_row,
-            row.end_row,
-            row.start_col,
-            row.end_col,
-            row.start_row_fixed,
-            row.end_row_fixed,
-            row.start_col_fixed,
-            row.end_col_fixed
+            row.fixed_image_path
         )
     }
 

@@ -2,8 +2,6 @@
 
 import numpy as np
 import tifffile as tiff
-
-# from src.utils.image_stitching import stitch_registered_crops
 from utils.image_stitching import stitch_registered_crops
 
 def export_image(registered_crops, overlap_x, overlap_y, output_path):

@@ -14,14 +14,6 @@ process register_images {
         val(output_path_conv),
         val(output_path_reg),
         val(fixed_image_path),
-        val(start_row),
-        val(end_row),
-        val(start_col),
-        val(end_col),
-        val(start_row_fixed),
-        val(end_row_fixed),
-        val(start_col_fixed),
-        val(end_col_fixed),
         val(params.mappings_dir),
         val(params.registered_crops_dir),
         val(params.crop_width_x),
@@ -39,8 +31,6 @@ process register_images {
             --input-path "${output_path_conv}" \
             --output-path "${output_path_reg}" \
             --fixed-image-path "${fixed_image_path}" \
-            --loading-region "${start_row}" "${end_row}" "${start_col}" "${end_col}" \
-            "${start_row_fixed}" "${end_row_fixed}" "${start_col_fixed}" "${end_col_fixed}" \
             --mappings-dir "${params.mappings_dir}" \
             --registered-crops-dir "${params.registered_crops_dir}" \
             --crop-width-x "${params.crop_width_x}" \

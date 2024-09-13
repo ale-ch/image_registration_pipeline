@@ -64,7 +64,8 @@ def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray):
     # Detect ORB keypoints and descriptors
     orb = cv2.ORB_create(
         fastThreshold=0, 
-        edgeThreshold=0
+        edgeThreshold=0,
+        nfeatures=1000
     )
 
     keypoints1, descriptors1 = orb.detectAndCompute(y_normalized, None)

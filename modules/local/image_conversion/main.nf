@@ -60,7 +60,7 @@ process convert_moving_images {
     tuple val(fixed_image),
         val(output_path_conv),
         val(output_path_reg),
-        val(fixed_image_path),
+        val(fixed_image_path)
 
     script:
     """

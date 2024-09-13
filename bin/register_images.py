@@ -3,7 +3,7 @@
 import argparse
 import os 
 import logging
-from skimage.io import imread 
+from skimage.io import imread
 from utils.image_cropping import crop_2d_array_grid
 from utils.image_cropping import load_tiff_region
 from utils.image_cropping import zero_pad_arrays

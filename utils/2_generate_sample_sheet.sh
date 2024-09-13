@@ -130,9 +130,3 @@ python bin/utils/generate_sample_sheet/join_samp_sheets.py \
     --export-path "${export_path}" \
     --export-path-filtered "${export_path}" \
     --backup-dir "${logs_dir}/io/backups" 
-
-python bin/utils/generate_sample_sheet/get_regular_crop_areas.py \
-    --sample-sheet-path "${export_path}" \
-    --ref-col 'input_path_conv' \
-    --group-col 'patient_id' \
-    --export-path "${export_path}" 

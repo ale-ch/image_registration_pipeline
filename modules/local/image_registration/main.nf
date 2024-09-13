@@ -3,8 +3,10 @@
 */
 
 process register_images {
-    cpus 10
-    memory '20G'
+    cpus 15
+    errorStrategy 'retry'
+    maxRetries = 3
+    memory { 40.GB * task.attempt }
     publishDir "${params.output_dir_reg}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "registration"

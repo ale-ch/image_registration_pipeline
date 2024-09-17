@@ -289,16 +289,18 @@ def zero_pad_arrays(arr1, arr2):
     
     # Determine the target shape by taking the maximum of each dimension
     target_shape = tuple(max(shape1[i], shape2[i]) for i in range(len(shape1)))
+
+    # Only pad if necessary
+    if shape1 != target_shape:
+        pad_width1 = [(0, target_shape[i] - shape1[i]) for i in range(len(shape1))]
+        arr1 = np.pad(arr1, pad_width1, mode='constant')
     
-    # Zero pad both arrays to the target shape
-    padded_arr1 = np.zeros(target_shape)
-    padded_arr2 = np.zeros(target_shape)
+    if shape2 != target_shape:
+        pad_width2 = [(0, target_shape[i] - shape2[i]) for i in range(len(shape2))]
+        arr2 = np.pad(arr2, pad_width2, mode='constant')
     
-    # Fill the padded arrays with original array values
-    padded_arr1[tuple(slice(0, s) for s in shape1)] = arr1
-    padded_arr2[tuple(slice(0, s) for s in shape2)] = arr2
-    
-    return padded_arr1, padded_arr2
+    return arr1, arr2
+
 
 
 

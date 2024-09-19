@@ -3,13 +3,13 @@
 import argparse
 import os 
 import logging
+import gc
 from skimage.io import imread
+from utils.wrappers.affine_registration import affine_registration
 from utils.image_cropping import crop_2d_array_grid
-from utils.image_cropping import load_tiff_region
 from utils.image_cropping import zero_pad_arrays
 from utils.wrappers.create_checkpoint_dirs import create_checkpoint_dirs
 from utils.wrappers.compute_mappings import compute_mappings
-from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
 from utils.wrappers.apply_mappings import apply_mappings
 from utils.wrappers.export_image import export_image
 from utils.empty_folder import empty_folder
@@ -25,26 +25,36 @@ def register_images(input_path, output_path, fixed_image_path,
     
     logger.info(f'Output path: {output_path}')
 
-    fixed_image_raw = imread(fixed_image_path)
-    moving_image_raw = imread(input_path)
+    fixed_image = imread(fixed_image_path)
+    moving_image = imread(input_path)
 
-    fixed_image, moving_image = zero_pad_arrays(fixed_image_raw, moving_image_raw)
-
-    logger.debug(f"Raw fixed image shape: {fixed_image_raw.shape}")
-    logger.debug(f"Raw moving image shape: {moving_image_raw.shape}")
+    fixed_image, moving_image = zero_pad_arrays(fixed_image, moving_image)
      
     logger.debug(f"Padded fixed image shape: {fixed_image.shape}")
     logger.debug(f"Padded moving image shape: {moving_image.shape}")
 
-    affine_mapping = compute_affine_mapping_cv2(fixed_image, moving_image)
-    affine_reg_image = apply_mapping(affine_mapping, moving_image, method='cv2')
+    affine_reg_image = affine_registration(fixed_image, moving_image)
 
-    fixed_crops = crop_2d_array_grid(fixed_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
-    moving_crops = crop_2d_array_grid(affine_reg_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
+    del moving_image
+    gc.collect()
+
+    fixed_crops = crop_2d_array_grid(crop_width_x, crop_width_y, overlap_x, overlap_y, fixed_image)
+    
+    del fixed_image
+    gc.collect()
+
+    moving_crops = crop_2d_array_grid(crop_width_x, crop_width_y, overlap_x, overlap_y, affine_reg_image)
+
+    del affine_reg_image
+    gc.collect()
 
     current_mappings_dir, current_registered_crops_dir = create_checkpoint_dirs(mappings_dir, registered_crops_dir, input_path)
     mappings = compute_mappings(fixed_crops, moving_crops, current_mappings_dir, max_workers)
-    registered_crops = apply_mappings(mappings, moving_crops, current_registered_crops_dir)
+    registered_crops = apply_mappings(mappings=mappings, moving_crops=moving_crops, checkpoint_dir=current_registered_crops_dir)
+
+    del fixed_crops, moving_crops
+    gc.collect()
+
     export_image(registered_crops, overlap_x, overlap_y, output_path)
     logger.info(f'Image {input_path} processed successfully.')
 

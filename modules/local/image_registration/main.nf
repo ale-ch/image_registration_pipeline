@@ -5,8 +5,8 @@
 process register_images {
     cpus 15
     errorStrategy 'retry'
-    maxRetries = 3
-    memory { 40.GB * task.attempt }
+    maxRetries = 2
+    memory { 100.GB * task.attempt }
     publishDir "${params.output_dir_reg}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "registration"

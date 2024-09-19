@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
+import gc
 import numpy as np
 import tifffile as tiff
 from utils.image_stitching import stitch_registered_crops
 
-def export_image(registered_crops, overlap_x, overlap_y, output_path):
+def export_image(registered_crops, overlap_x, overlap_y, output_path:str = None, export=True):
     """
     Export stitched image from registered crops to OME-TIFF format.
 
@@ -23,10 +24,23 @@ def export_image(registered_crops, overlap_x, overlap_y, output_path):
     for ch in range(channels):
         reg_channel = [(idx, crop) for idx, crop in registered_crops if idx[2] == ch]
         stitched = stitch_registered_crops(reg_channel, overlap_x=overlap_x, overlap_y=overlap_y)
+
+        del reg_channel 
+        gc.collect()
+        
         stitched_channels.append(stitched)
+
+        del stitched 
+        gc.collect()
 
     # Combine stitched channels into a single 3D array
     stitched_image = np.stack(stitched_channels, axis=-1)
 
-    # Save to OME-TIFF
-    tiff.imwrite(output_path, stitched_image, imagej=True, metadata={'axes': 'ZYX'})
+    del stitched_channels
+    gc.collect()
+
+    if export:
+        # Save to OME-TIFF file
+        tiff.imwrite(output_path, stitched_image, imagej=True, metadata={'axes': 'ZYX'})
+
+    return stitched_image

@@ -46,7 +46,7 @@ def compute_diffeomorphic_mapping_dipy(y: np.ndarray, x: np.ndarray, sigma_diff=
 
     return mapping 
 
-def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray):
+def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray, crop=True, crop_size=4000, n_features=2000):
     """
     Compute affine mapping using OpenCV.
     
@@ -58,18 +58,18 @@ def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray):
         matrix (ndarray): Affine transformation matrix.
     """    
     # Normalize images to 8-bit (0-255) for feature detection
-    y_normalized = cv2.normalize(y, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-    x_normalized = cv2.normalize(x, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
+    if crop:
+        mid_y = np.array(y.shape) // 2
+        mid_x = np.array(x.shape) // 2
+        y = cv2.normalize(y[(mid_y[0]-crop_size):(mid_y[0]+crop_size), (mid_y[1]-crop_size):(mid_y[1]+crop_size)], None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        x = cv2.normalize(x[(mid_x[0]-crop_size):(mid_x[0]+crop_size), (mid_x[1]-crop_size):(mid_x[1]+crop_size)], None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        
     # Detect ORB keypoints and descriptors
-    orb = cv2.ORB_create(
-        fastThreshold=0, 
-        edgeThreshold=0,
-        nfeatures=1000
-    )
+    orb = cv2.ORB_create(fastThreshold=0, edgeThreshold=0, nfeatures=n_features)
 
-    keypoints1, descriptors1 = orb.detectAndCompute(y_normalized, None)
-    keypoints2, descriptors2 = orb.detectAndCompute(x_normalized, None)
+    keypoints1, descriptors1 = orb.detectAndCompute(y, None)
+    keypoints2, descriptors2 = orb.detectAndCompute(x, None)
 
     if descriptors1 is None or descriptors2 is None:
         raise ValueError("One of the descriptors is empty")

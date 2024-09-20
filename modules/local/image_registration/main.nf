@@ -1,20 +1,37 @@
 /*
-    Register images with respect to a predefined static image
+    Register images with respect to a predefined fixed image
 */
 
-process register_images {
+process affine_registration {
     cpus 15
-    errorStrategy 'retry'
-    maxRetries = 2
-    memory { 100.GB * task.attempt }
+    memory "60G"
+    // errorStrategy 'retry'
+    // maxRetries = 1
+    // memory { 80.GB * task.attempt }
     publishDir "${params.output_dir_reg}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
-    tag "registration"
+    tag "registration_1"
     
     input:
     tuple val(fixed_image),
         val(output_path_conv),
-        val(output_path_reg),
+        val(output_path_reg_1),
+        val(output_path_reg_2),
+        val(fixed_image_path),
+        val(params.mappings_dir),
+        val(params.registered_crops_dir),
+        val(params.crop_width_x),
+        val(params.crop_width_y),
+        val(params.overlap_x),
+        val(params.overlap_y),
+        val(params.max_workers),
+        val(params.delete_checkpoints),
+        val(params.logs_dir)
+
+    output:
+    tuple val(fixed_image),
+        val(output_path_reg_1),
+        val(output_path_reg_2),
         val(fixed_image_path),
         val(params.mappings_dir),
         val(params.registered_crops_dir),
@@ -29,9 +46,46 @@ process register_images {
     script:
     """
     if [ "${fixed_image}" == "False" ] || [ "${fixed_image}" == "FALSE" ]; then
-        register_images.py \
+        affine_registration.py \
             --input-path "${output_path_conv}" \
-            --output-path "${output_path_reg}" \
+            --output-path "${output_path_reg_1}" \
+            --fixed-image-path "${fixed_image_path}" \
+            --logs-dir "${params.logs_dir}" 
+    fi
+    """
+}
+
+process elastic_registration {
+    cpus 15
+    memory "60G"
+    // errorStrategy 'retry'
+    // maxRetries = 1
+    // memory { 80.GB * task.attempt }
+    publishDir "${params.output_dir_reg}", mode: "copy"
+    // container "docker://tuoprofilo/toolname:versione"
+    tag "registration_2"
+    
+    input:
+    tuple val(fixed_image),
+        val(output_path_reg_1),
+        val(output_path_reg_2),
+        val(fixed_image_path),
+        val(params.mappings_dir),
+        val(params.registered_crops_dir),
+        val(params.crop_width_x),
+        val(params.crop_width_y),
+        val(params.overlap_x),
+        val(params.overlap_y),
+        val(params.max_workers),
+        val(params.delete_checkpoints),
+        val(params.logs_dir)
+
+    script:
+    """
+    if [ "${fixed_image}" == "False" ] || [ "${fixed_image}" == "FALSE" ]; then
+        elastic_registration.py \
+            --input-path "${output_path_reg_1}" \
+            --output-path "${output_path_reg_2}" \
             --fixed-image-path "${fixed_image_path}" \
             --mappings-dir "${params.mappings_dir}" \
             --registered-crops-dir "${params.registered_crops_dir}" \

@@ -9,11 +9,12 @@ nextflow.enable.dsl=2
 */
 
 include { parse_csv } from './bin/utils/workflow.nf'
-include { get_registration_params } from './bin/utils/workflow.nf'     
+include { get_elastic_registration_params } from './bin/utils/workflow.nf'     
 include { get_conversion_params } from './bin/utils/workflow.nf'                        
 include { convert_fixed_images } from './modules/local/image_conversion/main.nf'
 include { convert_moving_images } from './modules/local/image_conversion/main.nf'  
-include { register_images } from './modules/local/image_registration/main.nf' 
+include { affine_registration } from './modules/local/image_registration/main.nf' 
+include { elastic_registration } from './modules/local/image_registration/main.nf'
 
 workflow {
 
@@ -33,7 +34,8 @@ workflow {
             row.fixed_image,
             row.input_path_conv, 
             row.output_path_conv,  
-            row.output_path_reg, 
+            row.output_path_reg_1,
+            row.output_path_reg_2, 
             row.fixed_image_path
         )
     }
@@ -43,17 +45,19 @@ workflow {
         DEFINE PARAMETERS
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
+
     // Conversion
     params_conv = get_conversion_params()
     
     // Registration
-    params_reg = get_registration_params()
+    params_reg = get_elastic_registration_params()
     
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         IMAGE CONVERSION
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
+
     // Combine parsed CSV data with additional conversion parameters
     input_conv = params_shared.combine(params_conv)
 
@@ -68,9 +72,9 @@ workflow {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    // Combine converted image output with additional registration parameters
-    input_reg = output_conv.combine(params_reg)
-
-    // Execute image registration module with combined parameters
-    register_images(input_reg)
+    input_reg_1  = output_conv.combine(params_reg)
+    affine_registration(input_reg_1)
+    
+    input_reg_2 = affine_registration.out
+    elastic_registration(input_reg_2)
 }

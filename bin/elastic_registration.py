@@ -2,10 +2,11 @@
 
 import argparse
 import os 
-import logging
 import gc
+import logging
+from utils import logging_config
 from skimage.io import imread
-from utils.wrappers.affine_registration import affine_registration
+from utils.image_cropping import load_tiff_region
 from utils.image_cropping import crop_2d_array_grid
 from utils.image_cropping import zero_pad_arrays
 from utils.wrappers.create_checkpoint_dirs import create_checkpoint_dirs
@@ -13,40 +14,43 @@ from utils.wrappers.compute_mappings import compute_mappings
 from utils.wrappers.apply_mappings import apply_mappings
 from utils.wrappers.export_image import export_image
 from utils.empty_folder import empty_folder
-from utils import logging_config
 
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
-def register_images(input_path, output_path, fixed_image_path, 
+def elastic_registration(input_path, output_path, fixed_image_path, 
                     mappings_dir, registered_crops_dir,  
                     crop_width_x, crop_width_y, overlap_x, overlap_y, 
                     delete_checkpoints, max_workers):
-    
     logger.info(f'Output path: {output_path}')
+    leaf_directory_path = os.path.basename(os.path.dirname(output_path))
+    if not os.path.exists(leaf_directory_path):
+        os.makedirs(leaf_directory_path)
+        logger.debug(f'Output directory created successfully: {leaf_directory_path}')
 
-    fixed_image = imread(fixed_image_path)
-    moving_image = imread(input_path)
+    logger.debug(f"Loading fixed image {input_path}")
+    fixed_image = imread(fixed_image_path) # [10000:30000, 10000:30000, :]
+    logger.debug(f"Loading moving image {input_path}")
+    moving_image  = imread(input_path) # [8000:28000, 10000:30000, :]
 
-    fixed_image, moving_image = zero_pad_arrays(fixed_image, moving_image)
+    logger.debug(f'Moving image shape: {moving_image.shape}')
+    logger.debug(f'Fixed image shape: {fixed_image.shape}')
+
+    if fixed_image.shape != moving_image.shape:
+        fixed_image, moving_image = zero_pad_arrays(fixed_image, moving_image)
      
     logger.debug(f"Padded fixed image shape: {fixed_image.shape}")
     logger.debug(f"Padded moving image shape: {moving_image.shape}")
-
-    affine_reg_image = affine_registration(fixed_image, moving_image)
-
-    del moving_image
-    gc.collect()
 
     fixed_crops = crop_2d_array_grid(crop_width_x, crop_width_y, overlap_x, overlap_y, fixed_image)
     
     del fixed_image
     gc.collect()
 
-    moving_crops = crop_2d_array_grid(crop_width_x, crop_width_y, overlap_x, overlap_y, affine_reg_image)
+    moving_crops = crop_2d_array_grid(crop_width_x, crop_width_y, overlap_x, overlap_y, moving_image)
 
-    del affine_reg_image
-    gc.collect()
+    # del moving_image
+    # gc.collect()
 
     current_mappings_dir, current_registered_crops_dir = create_checkpoint_dirs(mappings_dir, registered_crops_dir, input_path)
     mappings = compute_mappings(fixed_crops, moving_crops, current_mappings_dir, max_workers)
@@ -55,7 +59,7 @@ def register_images(input_path, output_path, fixed_image_path,
     del fixed_crops, moving_crops
     gc.collect()
 
-    export_image(registered_crops, overlap_x, overlap_y, output_path)
+    export_image(registered_crops=registered_crops, overlap_x=overlap_x, overlap_y=overlap_y, output_path=output_path)
     logger.info(f'Image {input_path} processed successfully.')
 
     if delete_checkpoints:
@@ -70,7 +74,7 @@ def main(args):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    register_images(args.input_path, args.output_path, args.fixed_image_path,
+    elastic_registration(args.input_path, args.output_path, args.fixed_image_path,
                     args.mappings_dir, args.registered_crops_dir, 
                     args.crop_width_x, args.crop_width_y, 
                     args.overlap_x, args.overlap_y, 

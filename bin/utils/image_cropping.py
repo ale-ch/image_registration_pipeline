@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import tifffile
 import numpy as np
 
 def crop_2d_array(array, crop_areas, crop_indices=None):
@@ -139,3 +140,44 @@ def crop_2d_array_grid(crop_width_x: int = None, crop_width_y: int = None, overl
     crops = crop_2d_array(array=image, crop_areas=crop_areas, crop_indices=crop_indices)
 
     return crops
+
+def load_tiff_region(path, loading_region):
+    # Open the TIFF file
+    with tifffile.TiffFile(path) as tif:
+        # Unpack the coordinates from loading_region
+        start_row, end_row, start_col, end_col = loading_region
+        
+        # Define the region to load (slices for rows and columns)
+        region = (slice(start_row, end_row), slice(start_col, end_col))
+        
+        # Load the specified region from each page (channel) and stack them
+        loaded_region = []
+        
+        for page in tif.pages:
+            # Read the region from each page (channel)
+            channel_region = page.asarray()[region[0], region[1]]
+            loaded_region.append(channel_region)
+        
+        # Stack the loaded regions along a new axis to form a multi-channel image
+        multi_channel_image = np.stack(loaded_region, axis=-1)
+    
+    return multi_channel_image
+
+def zero_pad_arrays(arr1, arr2):
+    # Get the shapes of both arrays
+    shape1 = arr1.shape
+    shape2 = arr2.shape
+    
+    # Determine the target shape by taking the maximum of each dimension
+    target_shape = tuple(max(shape1[i], shape2[i]) for i in range(len(shape1)))
+
+    # Only pad if necessary
+    if shape1 != target_shape:
+        pad_width1 = [(0, target_shape[i] - shape1[i]) for i in range(len(shape1))]
+        arr1 = np.pad(arr1, pad_width1, mode='constant')
+    
+    if shape2 != target_shape:
+        pad_width2 = [(0, target_shape[i] - shape2[i]) for i in range(len(shape2))]
+        arr2 = np.pad(arr2, pad_width2, mode='constant')
+    
+    return arr1, arr2

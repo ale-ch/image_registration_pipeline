@@ -84,6 +84,9 @@ fi
 mappings_dir="${work_dir}/data/mappings"
 registered_crops_dir="${work_dir}/data/registered_crops"
 
+output_dir_reg_1="${output_dir_reg}/affine"
+output_dir_reg_2="${output_dir_reg}/elastic"
+
 # Create sample sheet for image conversion
 echo "Creating conv_sample_sheet.csv"
 python bin/utils/generate_sample_sheet/update_io.py \
@@ -104,18 +107,31 @@ python bin/utils/generate_sample_sheet/assign_fixed_image.py \
     --export-path "${logs_dir}/io/conv_sample_sheet.csv"
 
 # Create sample sheet for image registration
-echo "Creating reg_sample_sheet.csv"
+echo "Creating affine_reg_sample_sheet.csv"
 python bin/utils/generate_sample_sheet/update_io.py \
     --input-dir "${input_dir_conv}" \
-    --output-dir "${output_dir_reg}" \
+    --output-dir "${output_dir_reg_1}" \
     --input-ext ".nd2" \
     --output-ext ".ome.tiff" \
     --logs-dir "${logs_dir}" \
     --backup-dir "${backup_dir}" \
-    --colnames patient_id input_path_reg output_path_reg registered filename \
+    --colnames patient_id input_path_reg output_path_reg_1 registered_1 filename \
     --export-path "${logs_dir}/io/reg_sample_sheet.csv" \
     --make-dirs
 
+echo "Creating elastic_reg_sample_sheet.csv"
+python bin/utils/generate_sample_sheet/update_io.py \
+    --input-dir "${output_dir_reg_1}" \
+    --output-dir "${output_dir_reg_2}" \
+    --input-ext ".nd2" \
+    --output-ext ".ome.tiff" \
+    --logs-dir "${logs_dir}" \
+    --backup-dir "${backup_dir}" \
+    --colnames patient_id input_path_reg output_path_reg_2 registered_2 filename \
+    --export-path "${logs_dir}/io/reg_sample_sheet.csv" \
+    --make-dirs
+
+# Remove unnecessary columns
 python bin/utils/generate_sample_sheet/remove_columns.py \
     --csv-file-path "${logs_dir}/io/reg_sample_sheet.csv" \
     --column input_path_reg patient_id \

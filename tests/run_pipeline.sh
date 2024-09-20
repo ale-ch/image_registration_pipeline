@@ -18,11 +18,21 @@
 #     --crop_width_y 2500
 
 
+# nextflow run main.nf \
+#     -with-tower \
+#     --work_dir /hpcnfs/scratch/DIMA/chiodin/tests/test444 \
+#     --sample_sheet_path /hpcnfs/scratch/DIMA/chiodin/tests/test444/logs/io/sampsheet1111.csv \
+#     --overlap_x 500 \
+#     --overlap_y 500 \
+#     --crop_width_x 2500 \
+#     --crop_width_y 2500
+
+
 nextflow run main.nf \
     -with-tower \
-    --work_dir /hpcnfs/scratch/DIMA/chiodin/tests/test444 \
-    --sample_sheet_path /hpcnfs/scratch/DIMA/chiodin/tests/test444/logs/io/sampsheet1111.csv \
-    --overlap_x 500 \
-    --overlap_y 500 \
-    --crop_width_x 2500 \
-    --crop_width_y 2500
+    --work_dir /hpcnfs/scratch/DIMA/chiodin/tests/test5 \
+    --sample_sheet_path /hpcnfs/scratch/DIMA/chiodin/tests/test5/logs/io/sampsheet_NEW.csv \
+    --overlap_x 2500 \
+    --overlap_y 2500 \
+    --crop_width_x 5000 \
+    --crop_width_y 5000

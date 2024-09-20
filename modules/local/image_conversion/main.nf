@@ -10,12 +10,13 @@ process convert_fixed_images {
     tag "image_conversion"
 
     input:
-    tuple val(converted), 
+    tuple val(converted),
         val(registered),
         val(fixed_image),
-        val(input_path_conv), 
-        val(output_path_conv),
-        val(output_path_reg),
+        val(input_path_conv),
+        val(output_path_conv), 
+        val(output_path_reg_1),
+        val(output_path_reg_2), 
         val(fixed_image_path),
         val(params.tilex),
         val(params.tiley),
@@ -49,7 +50,8 @@ process convert_moving_images {
         val(fixed_image),
         val(input_path_conv), 
         val(output_path_conv),
-        val(output_path_reg),
+        val(output_path_reg_1),
+        val(output_path_reg_2),
         val(fixed_image_path),
         val(params.tilex),
         val(params.tiley),
@@ -59,7 +61,8 @@ process convert_moving_images {
     output:
     tuple val(fixed_image),
         val(output_path_conv),
-        val(output_path_reg),
+        val(output_path_reg_1),
+        val(output_path_reg_2),
         val(fixed_image_path)
 
     script:

@@ -23,6 +23,8 @@ def elastic_registration(input_path, output_path, fixed_image_path,
                     crop_width_x, crop_width_y, overlap_x, overlap_y, 
                     delete_checkpoints, max_workers):
     logger.info(f'Output path: {output_path}')
+
+    # Check if output image directory exists 
     leaf_directory_path = os.path.basename(os.path.dirname(output_path))
     if not os.path.exists(leaf_directory_path):
         os.makedirs(leaf_directory_path)

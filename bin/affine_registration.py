@@ -38,7 +38,7 @@ def get_cropping_params(image):
 
     return crop_width_x, crop_width_y, overlap_x, overlap_y
 
-def get_dense_crops(moving, fixed, crop_width_x, crop_width_y, overlap_x, overlap_y):
+def get_dense_crop(moving, fixed, crop_width_x, crop_width_y, overlap_x, overlap_y):
     shape = moving.shape
     crop_areas = get_crop_areas(shape=shape, crop_width_x=crop_width_x, crop_width_y=crop_width_y, overlap_x=overlap_x, overlap_y=overlap_y)[1]
     for area in crop_areas:
@@ -59,6 +59,8 @@ def get_dense_crops(moving, fixed, crop_width_x, crop_width_y, overlap_x, overla
 
 def affine_registration(input_path, output_path, fixed_image_path, crop=True, crop_size=4000, n_features=2000):
     logger.info(f'Output path: {output_path}')
+
+    # Check if output image directory exists 
     leaf_directory_path = os.path.basename(os.path.dirname(output_path))
     if not os.path.exists(leaf_directory_path):
         os.makedirs(leaf_directory_path)
@@ -79,7 +81,7 @@ def affine_registration(input_path, output_path, fixed_image_path, crop=True, cr
 
     crop_width_x, crop_width_y, overlap_x, overlap_y = get_cropping_params(fixed_image)
 
-    fixed_crop, moving_crop = get_dense_crops(moving_image, fixed_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
+    fixed_crop, moving_crop = get_dense_crop(moving_image, fixed_image, crop_width_x, crop_width_y, overlap_x, overlap_y)
     
     logger.info(f'Computing affine transformation matrix.')
     matrix = compute_affine_mapping_cv2(fixed_crop[:,:,2], moving_crop[:,:,2], crop, crop_size, n_features)

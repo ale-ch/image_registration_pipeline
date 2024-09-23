@@ -4,7 +4,7 @@
 
 process affine_registration {
     cpus 15
-    memory "60G"
+    memory "80G"
     // errorStrategy 'retry'
     // maxRetries = 1
     // memory { 80.GB * task.attempt }
@@ -57,7 +57,7 @@ process affine_registration {
 
 process elastic_registration {
     cpus 15
-    memory "60G"
+    memory "80G"
     // errorStrategy 'retry'
     // maxRetries = 1
     // memory { 80.GB * task.attempt }

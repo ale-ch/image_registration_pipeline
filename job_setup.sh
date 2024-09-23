@@ -19,9 +19,6 @@ nextflow run main.nf \
     --sample_sheet_path /hpcnfs/techunits/imaging/work/ATTEND/achiodin/registered_images/logs/io/sample_sheet_current.csv \
     --crop_width_x 6000 \
     --crop_width_y 6000 \
-    --overlap_x 1000 \
-    --overlap_y 1000 \
+    --overlap_x 2500 \
+    --overlap_y 2500 \
     --max_workers 15
-
-
-# qsub job_setup.sh

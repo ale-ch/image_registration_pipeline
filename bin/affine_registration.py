@@ -61,7 +61,7 @@ def affine_registration(input_path, output_path, fixed_image_path, crop=True, cr
     logger.info(f'Output path: {output_path}')
 
     # Check if output image directory exists 
-    leaf_directory_path = os.path.basename(os.path.dirname(output_path))
+    leaf_directory_path = os.path.dirname(output_path)
     if not os.path.exists(leaf_directory_path):
         os.makedirs(leaf_directory_path)
         logger.debug(f'Output directory created successfully: {leaf_directory_path}')

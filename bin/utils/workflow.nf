@@ -20,9 +20,10 @@ def parse_csv(csv_file_path) {
 }
 
 // Function to define registration parameters
-def get_elastic_registration_params() {
+def get_diffeomorphic_registration_params() {
     return Channel.of(
         tuple(
+            params.crops_dir,             // Directory for storing image crops
             params.mappings_dir,         // Directory for storing mappings
             params.registered_crops_dir, // Directory for storing registered crops
             params.crop_width_x,         // Crop width in x-direction

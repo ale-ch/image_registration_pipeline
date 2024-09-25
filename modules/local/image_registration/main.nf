@@ -3,8 +3,8 @@
 */
 
 process affine_registration {
-    cpus 15
-    memory "80G"
+    cpus 2
+    memory "5G"
     // errorStrategy 'retry'
     // maxRetries = 1
     // memory { 80.GB * task.attempt }
@@ -18,6 +18,7 @@ process affine_registration {
         val(output_path_reg_1),
         val(output_path_reg_2),
         val(fixed_image_path),
+        val(params.crops_dir),
         val(params.mappings_dir),
         val(params.registered_crops_dir),
         val(params.crop_width_x),
@@ -33,6 +34,7 @@ process affine_registration {
         val(output_path_reg_1),
         val(output_path_reg_2),
         val(fixed_image_path),
+        val(params.crops_dir),
         val(params.mappings_dir),
         val(params.registered_crops_dir),
         val(params.crop_width_x),
@@ -50,14 +52,15 @@ process affine_registration {
             --input-path "${output_path_conv}" \
             --output-path "${output_path_reg_1}" \
             --fixed-image-path "${fixed_image_path}" \
+            --registered-crops-dir "${params.registered_crops_dir}" \
             --logs-dir "${params.logs_dir}" 
     fi
     """
 }
 
-process elastic_registration {
-    cpus 15
-    memory "80G"
+process diffeomorphic_registration {
+    cpus 2
+    memory "5G"
     // errorStrategy 'retry'
     // maxRetries = 1
     // memory { 80.GB * task.attempt }
@@ -70,6 +73,7 @@ process elastic_registration {
         val(output_path_reg_1),
         val(output_path_reg_2),
         val(fixed_image_path),
+        val(params.crops_dir),
         val(params.mappings_dir),
         val(params.registered_crops_dir),
         val(params.crop_width_x),
@@ -83,10 +87,11 @@ process elastic_registration {
     script:
     """
     if [ "${fixed_image}" == "False" ] || [ "${fixed_image}" == "FALSE" ]; then
-        elastic_registration.py \
+        diffeomorphic_registration.py \
             --input-path "${output_path_reg_1}" \
             --output-path "${output_path_reg_2}" \
             --fixed-image-path "${fixed_image_path}" \
+            --crops-dir "${params.crops_dir}" \
             --mappings-dir "${params.mappings_dir}" \
             --registered-crops-dir "${params.registered_crops_dir}" \
             --crop-width-x "${params.crop_width_x}" \

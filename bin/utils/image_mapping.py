@@ -44,32 +44,7 @@ def compute_diffeomorphic_mapping_dipy(y: np.ndarray, x: np.ndarray, sigma_diff=
     # Perform the diffeomorphic registration using a pre-alignment from affine registration
     mapping = sdr.optimize(y, x, prealign=affine.affine)
 
-    return mapping 
-
-# def compute_diffeomorphic_mapping_dipy(y: np.ndarray, x: np.ndarray, sigma_diff=20, radius=20):
-#     """
-#     Compute diffeomorphic mapping using DIPY without pre-alignment.
-#     
-#     Parameters:
-#         y (ndarray): Reference image.
-#         x (ndarray): Moving image to be registered.
-#         sigma_diff (int, optional): Standard deviation for the CCMetric. Default is 20.
-#         radius (int, optional): Radius for the CCMetric. Default is 20.
-# 
-#     Returns:
-#         mapping: A mapping object containing the transformation information.
-#     """
-#     if y.shape != x.shape:
-#         raise ValueError("Reference image (y) and moving image (x) must have the same shape.")
-#     
-#     # Define the metric and registration object
-#     metric = CCMetric(2, sigma_diff=sigma_diff, radius=radius)
-#     sdr = SymmetricDiffeomorphicRegistration(metric)
-# 
-#     # Perform the diffeomorphic registration directly without pre-alignment
-#     mapping = sdr.optimize(y, x)
-# 
-#     return mapping 
+    return mapping  
 
 def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray, crop=True, crop_size=4000, n_features=2000):
     """

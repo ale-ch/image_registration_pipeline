@@ -21,12 +21,12 @@ def apply_mappings(mappings, moving_crops, method='dipy', checkpoint_dir=None):
             os.makedirs(checkpoint_dir)
         
     registered_crops = []
-    channels = moving_crops[0][1].shape[2]
+    n_channels = moving_crops[0][1].shape[2]
 
     if method == 'cv2':
         mapping = mappings
         for i, crop in enumerate(moving_crops):
-            for ch in range(channels):
+            for ch in range(n_channels):
                 mov_crop = crop[1][:, :, ch]
                 mov_crop_idx = crop[0]
         
@@ -37,7 +37,7 @@ def apply_mappings(mappings, moving_crops, method='dipy', checkpoint_dir=None):
 
     if method == 'dipy':
         for i, mapping in enumerate(mappings):
-            for ch in range(channels):
+            for ch in range(n_channels):
                 mov_crop = moving_crops[i][1][:, :, ch]
                 mov_crop_idx = moving_crops[i][0]
     
@@ -46,7 +46,7 @@ def apply_mappings(mappings, moving_crops, method='dipy', checkpoint_dir=None):
                     if os.path.exists(checkpoint_filename):
                         # Load checkpoint if it exists
                         mapped_image_indexed = load_pickle(checkpoint_filename)
-                        registered_crops.append((mapped_image_indexed[0], mapped_image_indexed[1]))
+                        # registered_crops.append((mapped_image_indexed[0], mapped_image_indexed[1]))
                         print(f"Loaded checkpoint for i={mov_crop_idx}")
                         continue
     
@@ -58,6 +58,6 @@ def apply_mappings(mappings, moving_crops, method='dipy', checkpoint_dir=None):
                     save_pickle(mapped_image_indexed, checkpoint_filename)
                     print(f"Saved checkpoint for i={mov_crop_idx}")
         
-                registered_crops.append(mapped_image_indexed)
+                # registered_crops.append(mapped_image_indexed)
     
-    return registered_crops
+    # return registered_crops

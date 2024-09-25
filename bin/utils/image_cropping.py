@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 
+import os
+import re
+import gc
+import logging
 import tifffile
 import numpy as np
+from skimage.io import imread
+from utils.pickle_utils import save_pickle
+from utils import logging_config 
+
+logging_config.setup_logging()
+logger = logging.getLogger(__name__)
 
 def crop_2d_array(array, crop_areas, crop_indices=None):
     """
@@ -19,13 +29,13 @@ def crop_2d_array(array, crop_areas, crop_indices=None):
         start_row, end_row, start_col, end_col = area
         return array[start_row:end_row, start_col:end_col]
 
-    if isinstance(crop_areas, list):
-        if crop_indices is None:
-            return [crop_area(area) for area in crop_areas]
-        else:
-            return [(idx, crop_area(area)) for idx, area in zip(crop_indices, crop_areas)]
-    else:
+    if len([crop_areas]) == 1:
         return crop_area(crop_areas)
+    if crop_indices is None:
+        return [crop_area(area) for area in crop_areas]
+    else:
+        return [(idx, crop_area(area)) for idx, area in zip(crop_indices, crop_areas)]
+
 
 def get_cropping_positions(crop_width: int, overlap: int, axis=0, image=None, shape=None):
     """
@@ -121,26 +131,6 @@ def get_crop_areas(crop_width_x: int, crop_width_y: int, overlap_x: int, overlap
     else:
         return crop_areas
 
-def crop_2d_array_grid(crop_width_x: int = None, crop_width_y: int = None, overlap_x: int = None, overlap_y: int = None, image=None):
-    """
-    Crop an image into a grid of smaller images with specified overlap.
-
-    Parameters:
-        image (np.ndarray): The input 2D array representing the image to be cropped.
-        shape (tuple): 
-        crop_width_x (int, optional): Width of each crop along the x-axis.
-        crop_width_y (int, optional): Width of each crop along the y-axis.
-        overlap_x (int, optional): Overlap along the x-axis.
-        overlap_y (int, optional): Overlap along the y-axis.
-
-    Returns:
-        list: List of cropped arrays with their indices.
-    """
-    crop_indices, crop_areas = get_crop_areas(image=image, crop_width_x=crop_width_x, crop_width_y=crop_width_y, overlap_x=overlap_x, overlap_y=overlap_y, get_indices=True)
-    crops = crop_2d_array(array=image, crop_areas=crop_areas, crop_indices=crop_indices)
-
-    return crops
-
 def load_tiff_region(path, loading_region):
     # Open the TIFF file
     with tifffile.TiffFile(path) as tif:
@@ -163,21 +153,130 @@ def load_tiff_region(path, loading_region):
     
     return multi_channel_image
 
-def zero_pad_arrays(arr1, arr2):
-    # Get the shapes of both arrays
-    shape1 = arr1.shape
-    shape2 = arr2.shape
+def get_tiff_image_shape(tiff_path):
+    """
+    Get the width and height of a TIFF image without fully loading the image.
     
+    Parameters:
+        tiff_path (str): Path to the TIFF image.
+    
+    Returns:
+        tuple: (width, height) of the image.
+    """
+    with tifffile.TiffFile(tiff_path) as tiff:
+        image_shape = tiff.pages[0].shape  # (height, width)
+        width, height = image_shape[1], image_shape[0]
+    return width, height
+
+def get_padding_shape(shape1, shape2):
     # Determine the target shape by taking the maximum of each dimension
     target_shape = tuple(max(shape1[i], shape2[i]) for i in range(len(shape1)))
 
+    return target_shape
+
+def zero_pad_array(array, target_shape):
+    arr_shape = array.shape
+    # print(f"ARRAY SHAPE {arr_shape}")
     # Only pad if necessary
-    if shape1 != target_shape:
-        pad_width1 = [(0, target_shape[i] - shape1[i]) for i in range(len(shape1))]
-        arr1 = np.pad(arr1, pad_width1, mode='constant')
+    if arr_shape != target_shape:
+        pad_width = [(0, target_shape[i] - arr_shape[i]) for i in range(len(arr_shape))]
+        array = np.pad(array, pad_width, mode='constant')
     
-    if shape2 != target_shape:
-        pad_width2 = [(0, target_shape[i] - shape2[i]) for i in range(len(shape2))]
-        arr2 = np.pad(arr2, pad_width2, mode='constant')
+    return array
+
+def save_image_crops(image, crop_areas, output_dir):
+    """
+    Loops through each crop area, processes the crop, and saves each crop individually.
     
-    return arr1, arr2
+    Args:
+        image (ndarray): The input image (already padded if needed).
+        crop_areas (tuple): Tuple containing crop indices and crop dimensions (from get_crop_areas).
+        output_dir (str): Directory where crops will be saved.
+    """
+    # Check directory to save the crops
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        logger.debug(f'Directory created: {output_dir}')
+    
+    # Loop through each crop and save it
+    for index, area in zip(crop_areas[0], crop_areas[1]):
+        logger.debug(f'Processing crop_{index[0]}_{index[1]}')
+        
+        # Crop the image
+        crop = (index, crop_2d_array(image, crop_areas=area))
+        
+        # Save each crop individually with a unique name
+        crop_save_path = os.path.join(output_dir, f'crop_{index[0]}_{index[1]}.pkl')
+        save_pickle(crop, crop_save_path)
+        
+        logger.debug(f'Saved crop_{index[0]}_{index[1]} to {crop_save_path}')
+
+def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving, crop_width_x, crop_width_y, overlap_x, overlap_y):
+    """
+    Crops both the moving and fixed images and saves the crops to directories.
+    
+    Args:
+        input_path (str): Path to the moving image.
+        fixed_image_path (str): Path to the fixed image.
+        crops_dir (str): Directory where crops will be saved.
+        crop_width_x (int): Width of each crop.
+        crop_width_y (int): Height of each crop.
+        overlap_x (int): Overlap between crops along the x-axis.
+        overlap_y (int): Overlap between crops along the y-axis.
+        
+    Returns:
+        tuple: Directories for fixed image crops and moving image crops.
+    """
+    # Get image shapes and compute padding
+    mov_shape = get_tiff_image_shape(input_path)
+    fixed_shape = get_tiff_image_shape(fixed_image_path)
+    padding_shape = get_padding_shape(mov_shape, fixed_shape)
+    
+    # Compute crop areas
+    crop_areas = get_crop_areas(shape=padding_shape, crop_width_x=crop_width_x, crop_width_y=crop_width_y, overlap_x=overlap_x, overlap_y=overlap_y)
+
+    # Fixed image: load, pad to size and crop
+    logger.debug(f"Loading fixed image {fixed_image_path}")
+
+    # Pre-allocate the array to hold the padded images
+    n_channels = 3
+
+    fixed_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))
+    # Loop through each channel and apply padding
+    for ch in range(n_channels):
+        # Read the fixed image and select the current channel
+        fixed_image = imread(fixed_image_path)[:, :, ch]
+        
+        # Pad the fixed image
+        fixed_image = zero_pad_array(np.squeeze(fixed_image), padding_shape)
+        
+        # Store the padded image in the pre-allocated array
+        fixed_image_stacked[:, :, ch] = fixed_image
+
+    if not os.path.exists(current_crops_dir_fixed):
+        save_image_crops(fixed_image_stacked, crop_areas, current_crops_dir_fixed)
+
+    del fixed_image_stacked
+    gc.collect()
+
+    # Moving image: load, pad to size and crop
+    logger.debug(f"Loading moving image {input_path}")
+
+    # Pre-allocate the array to hold the padded images
+    moving_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))
+    # Loop through each channel and apply padding
+    for ch in range(n_channels):
+        # Read the fixed image and select the current channel
+        image = imread(input_path)[:, :, ch]
+        
+        # Pad the fixed image
+        image = zero_pad_array(np.squeeze(image), padding_shape)
+        
+        # Store the padded image in the pre-allocated array
+        moving_image_stacked[:, :, ch] = image
+
+    if not os.path.exists(current_crops_dir_moving):
+        save_image_crops(moving_image_stacked, crop_areas, current_crops_dir_moving)
+
+    del moving_image_stacked
+    gc.collect()

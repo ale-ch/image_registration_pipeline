@@ -1,22 +1,31 @@
 #!/usr/bin/env python
 
 import os
+import logging
+from utils import logging_config
 from concurrent.futures import ProcessPoolExecutor
 from utils.pickle_utils import load_pickle, save_pickle
 from utils.image_mapping import compute_diffeomorphic_mapping_dipy
 
-def process_crop(fixed_crop, moving_crop, checkpoint_dir):
-    """
-    Process a single pair of fixed and moving crops, compute diffeomorphic mapping, and save/load checkpoint.
+logging_config.setup_logging()
+logger = logging.getLogger(__name__)
 
-    Parameters:
-        fixed_crop (tuple): A tuple containing crop index and fixed image data.
-        moving_crop (tuple): A tuple containing crop index and moving image data.
-        checkpoint_dir (str): Directory to save/load checkpoint files.
+def process_crop(fixed_file, moving_file, current_crops_dir_fixed, current_crops_dir_moving, checkpoint_dir):
+    """
+    Loads a pair of fixed and moving crops from their respective directories.
+
+    Args:
+        fixed_file (str): Filename of the fixed crop.
+        moving_file (str): Filename of the moving crop.
+        current_crops_dir_fixed (str): Directory where fixed crops are stored.
+        current_crops_dir_moving (str): Directory where moving crops are stored.
 
     Returns:
-        dict: A dictionary containing the crop index and its computed mapping.
+        tuple: A tuple containing the fixed crop and the moving crop.
     """
+    fixed_crop = load_pickle(os.path.join(current_crops_dir_fixed, fixed_file))
+    moving_crop = load_pickle(os.path.join(current_crops_dir_moving, moving_file))
+
     checkpoint_path = os.path.join(checkpoint_dir, f'mapping_{fixed_crop[0][0]}_{fixed_crop[0][1]}.pkl')
     
     if os.path.exists(checkpoint_path):
@@ -34,10 +43,10 @@ def process_crop(fixed_crop, moving_crop, checkpoint_dir):
             # Save the computed mapping
             save_pickle(mapping_diffeomorphic, checkpoint_path)
             print(f"Saved checkpoint for i={fixed_crop[0][0]}_{fixed_crop[0][1]}")
+            
+    return mapping_diffeomorphic
 
-    return {"index": fixed_crop[0], "mapping": mapping_diffeomorphic}
-
-def compute_mappings(fixed_crops, moving_crops, checkpoint_dir, max_workers=None):
+def compute_mappings(fixed_files, moving_files, current_crops_dir_fixed, current_crops_dir_moving, checkpoint_dir, max_workers=None):
     """
     Compute affine and diffeomorphic mappings between fixed and moving image crops in parallel.
 
@@ -59,12 +68,16 @@ def compute_mappings(fixed_crops, moving_crops, checkpoint_dir, max_workers=None
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Submit tasks for each crop
         futures = [
-            executor.submit(process_crop, fixed_crop, moving_crop, checkpoint_dir)
-            for fixed_crop, moving_crop in zip(fixed_crops, moving_crops)
+            executor.submit(process_crop, fixed_file, moving_file, current_crops_dir_fixed, current_crops_dir_moving, checkpoint_dir)
+            for fixed_file, moving_file in zip(fixed_files, moving_files)
         ]
 
         # Collect the results as they complete
         for future in futures:
-            mappings.append(future.result()["mapping"])
+            # print(len(future.result()))
+            # print(future.result())
+            # print(future.result()[1])
+            # mappings.append(future.result()["mapping"])
+            mappings.append(future.result())
 
     return mappings

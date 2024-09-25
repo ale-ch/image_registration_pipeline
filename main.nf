@@ -9,12 +9,12 @@ nextflow.enable.dsl=2
 */
 
 include { parse_csv } from './bin/utils/workflow.nf'
-include { get_elastic_registration_params } from './bin/utils/workflow.nf'     
+include { get_diffeomorphic_registration_params } from './bin/utils/workflow.nf'     
 include { get_conversion_params } from './bin/utils/workflow.nf'                        
 include { convert_fixed_images } from './modules/local/image_conversion/main.nf'
 include { convert_moving_images } from './modules/local/image_conversion/main.nf'  
 include { affine_registration } from './modules/local/image_registration/main.nf' 
-include { elastic_registration } from './modules/local/image_registration/main.nf'
+include { diffeomorphic_registration } from './modules/local/image_registration/main.nf'
 
 workflow {
 
@@ -50,7 +50,7 @@ workflow {
     params_conv = get_conversion_params()
     
     // Registration
-    params_reg = get_elastic_registration_params()
+    params_reg = get_diffeomorphic_registration_params()
     
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -76,5 +76,5 @@ workflow {
     affine_registration(input_reg_1)
     
     input_reg_2 = affine_registration.out
-    elastic_registration(input_reg_2)
+    diffeomorphic_registration(input_reg_2)
 }

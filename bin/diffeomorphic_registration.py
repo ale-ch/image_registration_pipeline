@@ -2,10 +2,9 @@
 
 import argparse
 import os 
-import gc
 import logging
 from utils import logging_config
-from utils.pickle_utils import save_pickle, load_pickle
+from utils.pickle_utils import load_pickle
 from utils.image_cropping import crop_images
 from utils.wrappers.create_checkpoint_dirs import create_checkpoint_dirs, create_crops_dir
 from utils.wrappers.compute_mappings import compute_mappings

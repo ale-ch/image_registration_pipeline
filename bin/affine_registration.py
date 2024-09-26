@@ -12,12 +12,10 @@ from utils.image_cropping import load_tiff_region
 from utils.image_cropping import get_tiff_image_shape
 from utils.image_cropping import get_padding_shape
 from utils.image_cropping import zero_pad_array
-# from utils.image_cropping import zero_pad_arrays
 from utils.image_cropping import crop_2d_array
 from utils.image_cropping import get_crop_areas
 from utils.image_mapping import compute_affine_mapping_cv2
 from utils.wrappers.apply_mappings import apply_mapping
-# from utils.wrappers.apply_mappings import apply_mappings
 from utils.pickle_utils import save_pickle, load_pickle
 from utils.wrappers.export_image import export_image
 
@@ -53,9 +51,6 @@ def get_dense_crop(input_path, fixed_image_path, crop_areas):
         moving_shape = moving_crop.shape
         fixed_shape = fixed_crop.shape
         padding_shape = get_padding_shape(moving_shape, fixed_shape)
-        
-        # print(moving_shape, fixed_shape, padding_shape)
-        # print(len(moving_shape), len(fixed_shape), len(padding_shape))
 
         moving_crop = zero_pad_array(moving_crop, padding_shape)
         fixed_crop = zero_pad_array(fixed_crop, padding_shape)

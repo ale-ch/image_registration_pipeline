@@ -57,7 +57,3 @@ def apply_mappings(mappings, moving_crops, method='dipy', checkpoint_dir=None):
                     # Save checkpoint
                     save_pickle(mapped_image_indexed, checkpoint_filename)
                     print(f"Saved checkpoint for i={mov_crop_idx}")
-        
-                # registered_crops.append(mapped_image_indexed)
-    
-    # return registered_crops

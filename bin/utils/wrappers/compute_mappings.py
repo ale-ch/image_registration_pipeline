@@ -74,10 +74,6 @@ def compute_mappings(fixed_files, moving_files, current_crops_dir_fixed, current
 
         # Collect the results as they complete
         for future in futures:
-            # print(len(future.result()))
-            # print(future.result())
-            # print(future.result()[1])
-            # mappings.append(future.result()["mapping"])
             mappings.append(future.result())
 
     return mappings

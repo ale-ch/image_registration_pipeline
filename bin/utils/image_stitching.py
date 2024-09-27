@@ -30,16 +30,16 @@ def remove_crops_overlap(crops: list, overlap: int, axis: int = 0):
 
         # Handle row overlap
         if axis == 0:
-            if idx[0] != 0:
+            if idx[0] != 0:  # If not the first crop in the row
                 start_row += overlap_half_left
-            if idx[0] != max(idx[0] for idx, _ in crops):
+            if idx[0] != max(idx[0] for idx, _ in crops):  # If not the last crop in the row
                 end_row -= overlap_half_right
 
         # Handle column overlap
-        if axis == 1:
-            if idx[1] != 0:
+        elif axis == 1:
+            if idx[1] != 0:  # If not the first crop in the column
                 start_col += overlap_half_left
-            if idx[1] != max(idx[1] for idx, _ in crops):
+            if idx[1] != max(idx[1] for idx, _ in crops):  # If not the last crop in the column
                 end_col -= overlap_half_right
 
         # Extract the crop area without overlap
@@ -130,7 +130,7 @@ def stitch_registered_crops(images, overlap_x: int, overlap_y: int):
     Parameters:
         images (list of tuples): List of tuples where each tuple contains an index and a 2D 
                                  numpy array representing the cropped image. The index tuple 
-                                 consists of the (row, column, image channel).
+                                 consists of (row, column, image channel).
         overlap_x (int): Overlap to be removed along the x-axis (columns).
         overlap_y (int): Overlap to be removed along the y-axis (rows).
 

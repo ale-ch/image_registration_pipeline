@@ -26,14 +26,20 @@ def crop_2d_array(array, crop_areas, crop_indices=None):
         np.ndarray or list: The cropped 2D array or a list of cropped arrays (optionally with indices).
     """
     def crop_area(area):
+        # Extract the start and end rows/columns from the cropping area.
         start_row, end_row, start_col, end_col = area
+        # Return the cropped portion of the array.
         return array[start_row:end_row, start_col:end_col]
 
+    # If a single crop area is provided, crop and return that area directly.
     if len([crop_areas]) == 1:
         return crop_area(crop_areas)
+    
+    # If no crop indices are provided, return a list of cropped areas.
     if crop_indices is None:
         return [crop_area(area) for area in crop_areas]
     else:
+        # Return a list of tuples containing indices and corresponding cropped areas.
         return [(idx, crop_area(area)) for idx, area in zip(crop_indices, crop_areas)]
 
 
@@ -51,28 +57,34 @@ def get_cropping_positions(crop_width: int, overlap: int, axis=0, image=None, sh
     Returns:
         np.ndarray: A 2D array where the first row contains the starting indices and the second row contains the ending indices for each crop.
     """
+    # Validate crop width against overlap value.
     if crop_width <= overlap:
         raise ValueError("Crop width must be greater than overlap.")
 
+    # Ensure that either 'image' or 'shape' is provided, but not both.
     if (shape is None and image is None) or (shape is not None and image is not None):
         raise TypeError("You must provide either 'image' or 'shape', but not both.")
 
+    # If 'image' is provided, use its shape; otherwise, use the provided shape.
     if image is not None: 
         shape = image.shape
     
+    # Determine the dimension to calculate positions based on the specified axis.
     dim = shape[1] if axis == 0 else shape[0]
 
-    stride = int(crop_width - overlap)
-    start_positions = np.arange(0, dim - stride, stride)
-    n_crops = len(start_positions)
-    end_positions = start_positions[0:n_crops] + crop_width
+    stride = int(crop_width - overlap)  # Calculate stride based on crop width and overlap.
+    start_positions = np.arange(0, dim - stride, stride)  # Generate starting positions for crops.
+    n_crops = len(start_positions)  # Count the number of crops.
+    end_positions = start_positions[0:n_crops] + crop_width  # Calculate ending positions for each crop.
 
+    # Adjust start and end positions if the last crop exceeds the dimension.
     if end_positions[n_crops - 1] < dim:
         start_positions = np.append(start_positions, end_positions[n_crops - 1] - overlap)
         end_positions = np.append(end_positions, dim)
     elif end_positions[n_crops - 1] > dim:
         end_positions[n_crops - 1] = end_positions[n_crops - 1] - (end_positions[n_crops - 1] - dim)
 
+    # Create an array of start and end positions to return.
     positions = np.array([start_positions, end_positions])
 
     return positions
@@ -88,21 +100,23 @@ def make_crop_areas_list(horizontal_positions, vertical_positions):
     Returns:
         tuple: List of crop indices and list of crop areas.
     """
-    crop_areas = []
-    crop_indices = []
+    crop_areas = []  # Initialize a list to hold crop areas.
+    crop_indices = []  # Initialize a list to hold crop indices.
 
+    # If both positions are tuples, return the area directly as a single tuple.
     if isinstance(horizontal_positions, tuple) and isinstance(vertical_positions, tuple):
         crop_area = (horizontal_positions[0], horizontal_positions[1], vertical_positions[0], vertical_positions[1])
         return crop_area
 
+    # Iterate over vertical positions and horizontal positions to create crop areas.
     for v_pos_idx in range(vertical_positions.shape[1]):
         for h_pos_idx in range(horizontal_positions.shape[1]):
             v_pos = vertical_positions[:, v_pos_idx]
             h_pos = horizontal_positions[:, h_pos_idx]
             crop_index = (h_pos_idx, v_pos_idx)
 
-            crop_indices.append(crop_index)
-            crop_areas.append((h_pos[0], h_pos[1], v_pos[0], v_pos[1]))
+            crop_indices.append(crop_index)  # Append the crop index.
+            crop_areas.append((h_pos[0], h_pos[1], v_pos[0], v_pos[1]))  # Append the crop area.
 
     return crop_indices, crop_areas
 
@@ -122,16 +136,30 @@ def get_crop_areas(crop_width_x: int, crop_width_y: int, overlap_x: int, overlap
     Returns:
         tuple: Crop indices and crop areas, or only crop areas if get_indices is False.
     """
+    # Calculate vertical cropping positions based on provided parameters.
     vertical_positions = get_cropping_positions(image=image, shape=shape, overlap=overlap_x, crop_width=crop_width_x, axis=0)
+    # Calculate horizontal cropping positions based on provided parameters.
     horizontal_positions = get_cropping_positions(image=image, shape=shape, overlap=overlap_y, crop_width=crop_width_y, axis=1)
+    # Create crop indices and areas using the horizontal and vertical positions.
     crop_indices, crop_areas = make_crop_areas_list(horizontal_positions, vertical_positions)
 
+    # Return crop indices and areas if requested, otherwise return only areas.
     if get_indices:
         return crop_indices, crop_areas
     else:
         return crop_areas
 
 def load_tiff_region(path, loading_region):
+    """
+    Load a specified region from a TIFF file.
+
+    Parameters:
+        path (str): The path to the TIFF file.
+        loading_region (tuple): A tuple defining the region to load (start_row, end_row, start_col, end_col).
+
+    Returns:
+        np.ndarray: A multi-channel image array loaded from the specified region.
+    """
     # Open the TIFF file
     with tifffile.TiffFile(path) as tif:
         # Unpack the coordinates from loading_region
@@ -141,12 +169,12 @@ def load_tiff_region(path, loading_region):
         region = (slice(start_row, end_row), slice(start_col, end_col))
         
         # Load the specified region from each page (channel) and stack them
-        loaded_region = []
+        loaded_region = []  # List to hold loaded channels
         
         for page in tif.pages:
             # Read the region from each page (channel)
             channel_region = page.asarray()[region[0], region[1]]
-            loaded_region.append(channel_region)
+            loaded_region.append(channel_region)  # Append the loaded channel region
         
         # Stack the loaded regions along a new axis to form a multi-channel image
         multi_channel_image = np.stack(loaded_region, axis=-1)
@@ -165,21 +193,43 @@ def get_tiff_image_shape(tiff_path):
     """
     with tifffile.TiffFile(tiff_path) as tiff:
         image_shape = tiff.pages[0].shape  # (height, width)
-        width, height = image_shape[1], image_shape[0]
+        width, height = image_shape[1], image_shape[0]  # Extract width and height
     return width, height
 
 def get_padding_shape(shape1, shape2):
+    """
+    Calculate the target shape for padding by determining the maximum dimensions.
+
+    Parameters:
+        shape1 (tuple): Shape of the first array.
+        shape2 (tuple): Shape of the second array.
+
+    Returns:
+        tuple: The target shape that both arrays should conform to.
+    """
     # Determine the target shape by taking the maximum of each dimension
     target_shape = tuple(max(shape1[i], shape2[i]) for i in range(len(shape1)))
 
     return target_shape
 
 def zero_pad_array(array, target_shape):
+    """
+    Pad a NumPy array with zeros to match a specified target shape.
+
+    Parameters:
+        array (np.ndarray): The input array to be padded.
+        target_shape (tuple): The target shape for the array.
+
+    Returns:
+        np.ndarray: The zero-padded array.
+    """
     arr_shape = array.shape
-    # print(f"ARRAY SHAPE {arr_shape}")
+    
     # Only pad if necessary
     if arr_shape != target_shape:
+        # Calculate the padding width for each dimension
         pad_width = [(0, target_shape[i] - arr_shape[i]) for i in range(len(arr_shape))]
+        # Apply zero padding
         array = np.pad(array, pad_width, mode='constant')
     
     return array
@@ -195,19 +245,19 @@ def save_image_crops(image, crop_areas, output_dir):
     """
     # Check directory to save the crops
     if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+        os.makedirs(output_dir)  # Create directory if it doesn't exist
         logger.debug(f'Directory created: {output_dir}')
     
     # Loop through each crop and save it
     for index, area in zip(crop_areas[0], crop_areas[1]):
         logger.debug(f'Processing crop_{index[0]}_{index[1]}')
         
-        # Crop the image
+        # Crop the image using the specified crop area
         crop = (index, crop_2d_array(image, crop_areas=area))
         
         # Save each crop individually with a unique name
         crop_save_path = os.path.join(output_dir, f'crop_{index[0]}_{index[1]}.pkl')
-        save_pickle(crop, crop_save_path)
+        save_pickle(crop, crop_save_path)  # Save the crop using pickle
         
         logger.debug(f'Saved crop_{index[0]}_{index[1]} to {crop_save_path}')
 
@@ -218,7 +268,8 @@ def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_c
     Args:
         input_path (str): Path to the moving image.
         fixed_image_path (str): Path to the fixed image.
-        crops_dir (str): Directory where crops will be saved.
+        current_crops_dir_fixed (str): Directory where fixed image crops will be saved.
+        current_crops_dir_moving (str): Directory where moving image crops will be saved.
         crop_width_x (int): Width of each crop.
         crop_width_y (int): Height of each crop.
         overlap_x (int): Overlap between crops along the x-axis.
@@ -228,10 +279,10 @@ def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_c
         tuple: Directories for fixed image crops and moving image crops.
     """
     # Get image shapes and compute padding
-    mov_shape = get_tiff_image_shape(input_path)
-    fixed_shape = get_tiff_image_shape(fixed_image_path)
-    padding_shape = get_padding_shape(mov_shape, fixed_shape)
-    
+    mov_shape = get_tiff_image_shape(input_path)  # Shape of moving image
+    fixed_shape = get_tiff_image_shape(fixed_image_path)  # Shape of fixed image
+    padding_shape = get_padding_shape(mov_shape, fixed_shape)  # Calculate padding shape
+
     # Compute crop areas
     crop_areas = get_crop_areas(shape=padding_shape, crop_width_x=crop_width_x, crop_width_y=crop_width_y, overlap_x=overlap_x, overlap_y=overlap_y)
 
@@ -239,9 +290,9 @@ def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_c
     logger.debug(f"Loading fixed image {fixed_image_path}")
 
     # Pre-allocate the array to hold the padded images
-    n_channels = 3
+    n_channels = 3  # Number of channels in the image
 
-    fixed_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))
+    fixed_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
     # Loop through each channel and apply padding
     for ch in range(n_channels):
         # Read the fixed image and select the current channel
@@ -253,30 +304,32 @@ def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_c
         # Store the padded image in the pre-allocated array
         fixed_image_stacked[:, :, ch] = fixed_image
 
+    # If the output directory for fixed crops doesn't exist, save the image crops.
     if not os.path.exists(current_crops_dir_fixed):
         save_image_crops(fixed_image_stacked, crop_areas, current_crops_dir_fixed)
 
-    del fixed_image_stacked
-    gc.collect()
+    del fixed_image_stacked  # Delete the array to free up memory
+    gc.collect()  # Force garbage collection
 
     # Moving image: load, pad to size and crop
     logger.debug(f"Loading moving image {input_path}")
 
     # Pre-allocate the array to hold the padded images
-    moving_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))
+    moving_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
     # Loop through each channel and apply padding
     for ch in range(n_channels):
-        # Read the fixed image and select the current channel
+        # Read the moving image and select the current channel
         image = imread(input_path)[:, :, ch]
         
-        # Pad the fixed image
+        # Pad the moving image
         image = zero_pad_array(np.squeeze(image), padding_shape)
         
         # Store the padded image in the pre-allocated array
         moving_image_stacked[:, :, ch] = image
 
+    # If the output directory for moving crops doesn't exist, save the image crops.
     if not os.path.exists(current_crops_dir_moving):
         save_image_crops(moving_image_stacked, crop_areas, current_crops_dir_moving)
 
-    del moving_image_stacked
-    gc.collect()
+    del moving_image_stacked  # Delete the array to free up memory
+    gc.collect()  # Force garbage collection

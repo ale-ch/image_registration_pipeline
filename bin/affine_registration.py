@@ -204,9 +204,9 @@ if __name__ == '__main__':
                         help='Directory to save intermediate registered crops.')
     parser.add_argument('--crop', action='store_false', 
                         help='Whether to compute the affine mapping using a smaller subregion of the image.')
-    parser.add_argument('--crop-size', type=int, default=2000, 
+    parser.add_argument('--crop-size', type=int, default=4000, 
                         help='Size of the subregion to use for affine mapping (if cropping is enabled).')
-    parser.add_argument('--n-features', type=int, default=500, 
+    parser.add_argument('--n-features', type=int, default=2000, 
                         help='Number of features to detect for computing the affine transformation.')
     parser.add_argument('--logs-dir', type=str, required=True, 
                         help='Directory to store log files.')

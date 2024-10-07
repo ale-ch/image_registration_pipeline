@@ -3,8 +3,8 @@
 */
 
 process affine_registration {
-    cpus 2
-    memory "5G"
+    cpus 32
+    memory "170G"
     // errorStrategy 'retry'
     // maxRetries = 1
     // memory { 80.GB * task.attempt }
@@ -59,8 +59,8 @@ process affine_registration {
 }
 
 process diffeomorphic_registration {
-    cpus 2
-    memory "5G"
+    cpus 32
+    memory "170G"
     // errorStrategy 'retry'
     // maxRetries = 1
     // memory { 80.GB * task.attempt }

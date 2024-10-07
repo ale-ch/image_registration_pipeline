@@ -62,7 +62,11 @@ def main(args):
     # Create intermediate directories for crops and mappings
     current_crops_dir_fixed = create_crops_dir(args.fixed_image_path, args.crops_dir)
     current_crops_dir_moving = create_crops_dir(args.input_path, args.crops_dir)
-    current_mappings_dir, _, current_registered_crops_dir = create_checkpoint_dirs(args.mappings_dir, args.registered_crops_dir, args.input_path)
+    current_mappings_dir, _, current_registered_crops_dir = create_checkpoint_dirs(
+        args.mappings_dir, 
+        args.registered_crops_dir, 
+        args.input_path
+    )
 
     # Crop images and save them to the crops directories
     crop_images(args.input_path, args.fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving, 
@@ -85,9 +89,13 @@ def main(args):
     # Clear checkpoint directories if specified
     if args.delete_checkpoints:
         empty_folder(current_crops_dir_fixed)
+        logger.info(f'Directory {current_crops_dir_fixed} emptied successfully.')
         empty_folder(current_crops_dir_moving)
+        logger.info(f'Directory {current_crops_dir_moving} emptied successfully.')
         empty_folder(current_mappings_dir)
+        logger.info(f'Directory {current_mappings_dir} emptied successfully.')
         empty_folder(current_registered_crops_dir)
+        logger.info(f'Directory {current_registered_crops_dir} emptied successfully.')
 
 if __name__ == "__main__":
     # Set up argument parser for command-line usage

@@ -99,7 +99,6 @@ process diffeomorphic_registration {
             --overlap-x "${params.overlap_x}" \
             --overlap-y "${params.overlap_y}" \
             --max-workers "${params.max_workers}" \
-            --delete-checkpoints \
             --logs-dir "${params.logs_dir}"     
     fi
     """

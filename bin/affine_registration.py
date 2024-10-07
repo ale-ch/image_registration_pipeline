@@ -18,6 +18,7 @@ from utils.image_mapping import compute_affine_mapping_cv2
 from utils.wrappers.apply_mappings import apply_mapping
 from utils.pickle_utils import save_pickle, load_pickle
 from utils.wrappers.export_image import export_image
+from utils.empty_folder import empty_folder
 
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
@@ -185,6 +186,11 @@ def main(args):
     # Perform affine registration
     affine_registration(args.input_path, args.output_path, args.fixed_image_path, current_registered_crops_dir, args.crop, args.crop_size, args.n_features)
 
+    # Clear checkpoint directories if specified
+    if args.delete_checkpoints:
+        empty_folder(current_registered_crops_dir)
+        logger.info(f'Directory {current_registered_crops_dir} emptied successfully.')
+
 if __name__ == '__main__':
     # Set up argument parser for command-line usage
     parser = argparse.ArgumentParser(description="Register images from input paths and save them to output paths.")
@@ -204,5 +210,7 @@ if __name__ == '__main__':
                         help='Number of features to detect for computing the affine transformation.')
     parser.add_argument('--logs-dir', type=str, required=True, 
                         help='Directory to store log files.')
+    parser.add_argument('--delete-checkpoints', action='store_false', 
+                        help='Delete intermediate files after processing.')
     args = parser.parse_args()
     main(args)

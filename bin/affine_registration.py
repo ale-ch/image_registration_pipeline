@@ -116,8 +116,11 @@ def affine_registration(input_path, output_path, fixed_image_path, current_regis
 
     # Get image shape and determine crop areas
     mov_shape = get_tiff_image_shape(input_path)
+    print(f"Moving image shape: {mov_shape}")
     fixed_shape = get_tiff_image_shape(fixed_image_path)
+    print(f"Fixed image shape: {fixed_shape}")
     padding_shape = get_padding_shape(mov_shape, fixed_shape)
+    print("PADDING SHAPE: ", padding_shape)
     crop_width_x, crop_width_y, overlap_x, overlap_y = get_cropping_params(padding_shape)
     crop_areas = get_crop_areas(shape=padding_shape, crop_width_x=crop_width_x, crop_width_y=crop_width_y, overlap_x=overlap_x, overlap_y=overlap_y)
 

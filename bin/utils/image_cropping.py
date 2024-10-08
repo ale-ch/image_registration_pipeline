@@ -193,8 +193,8 @@ def get_tiff_image_shape(tiff_path):
     """
     with tifffile.TiffFile(tiff_path) as tiff:
         image_shape = tiff.pages[0].shape  # (height, width)
-        width, height = image_shape[1], image_shape[0]  # Extract width and height
-    return width, height
+        height, width = image_shape[0], image_shape[1] # Extract height and width
+    return height, width
 
 def get_padding_shape(shape1, shape2):
     """

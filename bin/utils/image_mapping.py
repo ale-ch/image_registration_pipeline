@@ -32,18 +32,19 @@ def compute_diffeomorphic_mapping_dipy(y: np.ndarray, x: np.ndarray, sigma_diff=
         raise ValueError("Reference image (y) and moving image (x) must have the same shape.")
     
     # Initialize the AffineRegistration and AffineTransform2D objects
-    affreg = AffineRegistration()
-    transform = AffineTransform2D()
+    #affreg = AffineRegistration()
+    #transform = AffineTransform2D()
 
     # Perform affine registration
-    affine = affreg.optimize(y, x, transform, params0=None)
+    #affine = affreg.optimize(y, x, transform, params0=None)
 
     # Define the metric and create the Symmetric Diffeomorphic Registration object
     metric = CCMetric(2, sigma_diff=sigma_diff, radius=radius)
     sdr = SymmetricDiffeomorphicRegistration(metric)
 
     # Perform the diffeomorphic registration using the pre-alignment from affine registration
-    mapping = sdr.optimize(y, x, prealign=affine.affine)
+    #mapping = sdr.optimize(y, x, prealign=affine.affine)
+    mapping = sdr.optimize(y, x)
 
     return mapping  
 

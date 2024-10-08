@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import numpy as np
 from utils.pickle_utils import save_pickle, load_pickle
 from utils.image_mapping import apply_mapping
 
@@ -43,6 +44,11 @@ def apply_mappings(mappings, moving_crops, method='dipy', checkpoint_dir=None):
             for ch in range(n_channels):
                 mov_crop = moving_crops[i][1][:, :, ch]  # Extract the specific channel of the moving crop
                 mov_crop_idx = moving_crops[i][0]  # Get the index of the crop
+
+                if checkpoint_dir is not None:
+                    # Save checkpoint
+                    save_pickle(mapped_image_indexed, checkpoint_filename)
+                    print(f"Saved checkpoint for i={mov_crop_idx}")
     
                 if checkpoint_dir is not None:
                     # Construct checkpoint filename
@@ -54,13 +60,17 @@ def apply_mappings(mappings, moving_crops, method='dipy', checkpoint_dir=None):
                         print(f"Loaded checkpoint for i={mov_crop_idx}")
                         registered_crops.append(mapped_image_indexed)
                         continue
-    
+                
+                # Check for single valued array (such as white border)
+                if not len(np.unique(mov_crop)) == 1:
                 # Apply mappings
-                mapped_image_indexed = (mov_crop_idx + (ch,), apply_mapping(mapping, mov_crop, method=method))
+                    mapped_image_indexed = (mov_crop_idx + (ch,), apply_mapping(mapping, mov_crop, method=method))
+                else:
+                # Return crop as is
+                    mapped_image_indexed = (mov_crop_idx + (ch,), mov_crop)
     
                 if checkpoint_dir is not None:
                     # Save checkpoint
                     save_pickle(mapped_image_indexed, checkpoint_filename)
                     print(f"Saved checkpoint for i={mov_crop_idx}")
-    
-    return registered_crops  # Return the registered crops
+

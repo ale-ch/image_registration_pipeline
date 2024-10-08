@@ -179,20 +179,21 @@ def main(args):
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-
-    # Create checkpoint directories
-    _, current_registered_crops_dir, _ = create_checkpoint_dirs(
-        root_registered_crops_dir=args.registered_crops_dir, 
-        moving_image_path=args.input_path
-    )
     
-    # Perform affine registration
-    affine_registration(args.input_path, args.output_path, args.fixed_image_path, current_registered_crops_dir, args.crop, args.crop_size, args.n_features)
+    if not os.path.exists(args.output_path):
+        # Create checkpoint directories
+        _, current_registered_crops_dir, _ = create_checkpoint_dirs(
+            root_registered_crops_dir=args.registered_crops_dir, 
+            moving_image_path=args.input_path
+        )
+    
+        # Perform affine registration
+        affine_registration(args.input_path, args.output_path, args.fixed_image_path, current_registered_crops_dir, args.crop, args.crop_size, args.n_features)
 
-    # Clear checkpoint directories if specified
-    if args.delete_checkpoints:
-        empty_folder(current_registered_crops_dir)
-        logger.info(f'Directory {current_registered_crops_dir} emptied successfully.')
+        # Clear checkpoint directories if specified
+        if args.delete_checkpoints:
+            empty_folder(current_registered_crops_dir)
+            logger.info(f'Directory {current_registered_crops_dir} emptied successfully.')
 
 if __name__ == '__main__':
     # Set up argument parser for command-line usage

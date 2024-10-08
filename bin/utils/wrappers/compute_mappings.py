@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import numpy as np
 import logging
 from utils import logging_config
 from concurrent.futures import ProcessPoolExecutor
@@ -38,16 +39,19 @@ def process_crop(fixed_file, moving_file, current_crops_dir_fixed, current_crops
         mapping_diffeomorphic = load_pickle(checkpoint_path)
         logger.info(f"Loaded checkpoint for i={fixed_crop[0][0]}_{fixed_crop[0][1]}")
     else:
-        # Extract the DAPI channel for processing
-        fixed_crop_dapi = fixed_crop[1][:, :, 2]
-        mov_crop_dapi = moving_crop[1][:, :, 2]
-
         if fixed_crop_dapi.shape != mov_crop_dapi.shape:
             logger.warning(f"Shape mismatch for crops at indices {fixed_crop[0]} and {moving_crop[0]}.")
             return None
         
-        # Compute the diffeomorphic mapping
-        mapping_diffeomorphic = compute_diffeomorphic_mapping_dipy(fixed_crop_dapi, mov_crop_dapi)
+        # Check for single valued crops
+        if len(np.unique(fixed_crop[1][:,:,2])) == 1 or len(np.unique(moving_crop[1][:,:,2])) == 1:
+            mapping_diffeomorphic = 0
+        else:
+            # Extract the DAPI channel for processing
+            fixed_crop_dapi = fixed_crop[1][:, :, 2]
+            mov_crop_dapi = moving_crop[1][:, :, 2]
+            # Compute the diffeomorphic mapping
+            mapping_diffeomorphic = compute_diffeomorphic_mapping_dipy(fixed_crop_dapi, mov_crop_dapi)
         
         # Save the computed mapping to a checkpoint
         save_pickle(mapping_diffeomorphic, checkpoint_path)
@@ -89,3 +93,4 @@ def compute_mappings(fixed_files, moving_files, current_crops_dir_fixed, current
             mappings.append(result)  # Add the result to the mappings list
 
     return mappings  # Return the list of mappings
+

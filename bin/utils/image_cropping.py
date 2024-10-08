@@ -193,8 +193,8 @@ def get_tiff_image_shape(tiff_path):
     """
     with tifffile.TiffFile(tiff_path) as tiff:
         image_shape = tiff.pages[0].shape  # (height, width)
-        height, width = image_shape[0], image_shape[1] # Extract height and width
-    return height, width
+        width, height = image_shape[1], image_shape[0]  # Extract width and height
+    return width, height
 
 def get_padding_shape(shape1, shape2):
     """
@@ -276,7 +276,7 @@ def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_c
         overlap_y (int): Overlap between crops along the y-axis.
         
     Returns:
-        tuple: Directories for fixed image crops and moving image crops.
+        tuple: Directories for fixed image crops and moving image crops. The saved arrays have shape (height, width, n_channels).
     """
     # Get image shapes and compute padding
     mov_shape = get_tiff_image_shape(input_path)  # Shape of moving image
@@ -286,50 +286,55 @@ def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_c
     # Compute crop areas
     crop_areas = get_crop_areas(shape=padding_shape, crop_width_x=crop_width_x, crop_width_y=crop_width_y, overlap_x=overlap_x, overlap_y=overlap_y)
 
-    # Fixed image: load, pad to size and crop
-    logger.debug(f"Loading fixed image {fixed_image_path}")
-
     # Pre-allocate the array to hold the padded images
     n_channels = 3  # Number of channels in the image
 
-    fixed_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
-    # Loop through each channel and apply padding
-    for ch in range(n_channels):
-        # Read the fixed image and select the current channel
-        fixed_image = imread(fixed_image_path)[:, :, ch]
-        
-        # Pad the fixed image
-        fixed_image = zero_pad_array(np.squeeze(fixed_image), padding_shape)
-        
-        # Store the padded image in the pre-allocated array
-        fixed_image_stacked[:, :, ch] = fixed_image
-
-    # If the output directory for fixed crops doesn't exist, save the image crops.
     if not os.path.exists(current_crops_dir_fixed):
-        save_image_crops(fixed_image_stacked, crop_areas, current_crops_dir_fixed)
+        # Fixed image: load, pad to size and crop
+        logger.debug(f"Loading fixed image {fixed_image_path}")
+        fixed_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
+        # Loop through each channel and apply padding
+        for ch in range(n_channels):
+            # Read the fixed image and select the current channel
+            fixed_image = imread(fixed_image_path)[:, :, ch]
+            
+            # Pad the fixed image
+            fixed_image = zero_pad_array(np.squeeze(fixed_image), padding_shape)
+            
+            # Store the padded image in the pre-allocated array
+            fixed_image_stacked[:, :, ch] = fixed_image
 
-    del fixed_image_stacked  # Delete the array to free up memory
-    gc.collect()  # Force garbage collection
+            # If the output directory for fixed crops doesn't exist, save the image crops.
+            save_image_crops(fixed_image_stacked, crop_areas, current_crops_dir_fixed)
 
-    # Moving image: load, pad to size and crop
-    logger.debug(f"Loading moving image {input_path}")
+        del fixed_image_stacked  # Delete the array to free up memory
+        gc.collect()  # Force garbage collection
+    else:
+        # Fixed image: load, pad to size and crop
+        logger.debug(f"Fixed image found at {fixed_image_path}")
+    
 
-    # Pre-allocate the array to hold the padded images
-    moving_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
-    # Loop through each channel and apply padding
-    for ch in range(n_channels):
-        # Read the moving image and select the current channel
-        image = imread(input_path)[:, :, ch]
-        
-        # Pad the moving image
-        image = zero_pad_array(np.squeeze(image), padding_shape)
-        
-        # Store the padded image in the pre-allocated array
-        moving_image_stacked[:, :, ch] = image
-
-    # If the output directory for moving crops doesn't exist, save the image crops.
     if not os.path.exists(current_crops_dir_moving):
-        save_image_crops(moving_image_stacked, crop_areas, current_crops_dir_moving)
+        # Moving image: load, pad to size and crop
+        logger.debug(f"Loading moving image {input_path}")
+        # Pre-allocate the array to hold the padded images
+        moving_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
+        # Loop through each channel and apply padding
+        for ch in range(n_channels):
+            # Read the moving image and select the current channel
+            image = imread(input_path)[:, :, ch]
+            
+            # Pad the moving image
+            image = zero_pad_array(np.squeeze(image), padding_shape)
+            
+            # Store the padded image in the pre-allocated array
+            moving_image_stacked[:, :, ch] = image
 
-    del moving_image_stacked  # Delete the array to free up memory
-    gc.collect()  # Force garbage collection
+            # If the output directory for moving crops doesn't exist, save the image crops.
+            save_image_crops(moving_image_stacked, crop_areas, current_crops_dir_moving)
+
+        del moving_image_stacked  # Delete the array to free up memory
+        gc.collect()  # Force garbage collection
+    else:
+        logger.debug(f"Moving image found at {input_path}")
+

@@ -60,7 +60,7 @@ process affine_registration {
 
 process diffeomorphic_registration {
     cpus 32
-    memory "170G"
+    memory "160G"
     // errorStrategy 'retry'
     // maxRetries = 1
     // memory { 80.GB * task.attempt }

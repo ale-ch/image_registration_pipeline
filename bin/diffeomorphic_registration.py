@@ -33,15 +33,11 @@ def diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving
     moving_files = [os.path.join(current_crops_dir_moving, file) for file in os.listdir(current_crops_dir_moving)]
     
     # Compute mappings for all crop pairs
-    mappings = compute_mappings(fixed_files, moving_files, current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, max_workers)
+    compute_mappings(fixed_files, moving_files, current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, max_workers)
 
-    # Load moving crops from their directory
-    moving_crops = []
-    for file in moving_files:
-        moving_crops.append(load_pickle(file))
+    mapping_files = [os.path.join(current_mappings_dir, file) for file in os.listdir(current_mappings_dir)]
+    apply_mappings(mapping_files, moving_files, current_registered_crops_dir, max_workers)
 
-    # Apply the computed mappings to the moving crops
-    apply_mappings(mappings=mappings, moving_crops=moving_crops, checkpoint_dir=current_registered_crops_dir)
 
 def main(args):
     # Set up logging to a file
@@ -53,27 +49,28 @@ def main(args):
     logger.info(f'Input path: {args.input_path}')
     logger.info(f'Output path: {args.output_path}')
     
-    # Check if output image directory exists, create it if not
-    output_dir_path = os.path.dirname(args.output_path)
-    if not os.path.exists(output_dir_path):
-        os.makedirs(output_dir_path)
-        logger.debug(f'Output directory created successfully: {output_dir_path}')
+    if not os.path.exists(args.output_path):
+        # Check if output image directory exists, create it if not
+        output_dir_path = os.path.dirname(args.output_path)
+        if not os.path.exists(output_dir_path):
+            os.makedirs(output_dir_path)
+            logger.debug(f'Output directory created successfully: {output_dir_path}')
 
-    # Create intermediate directories for crops and mappings
-    current_crops_dir_fixed = create_crops_dir(args.fixed_image_path, args.crops_dir)
-    current_crops_dir_moving = create_crops_dir(args.input_path, args.crops_dir)
-    current_mappings_dir, _, current_registered_crops_dir = create_checkpoint_dirs(
-        args.mappings_dir, 
-        args.registered_crops_dir, 
-        args.input_path
-    )
+        # Create intermediate directories for crops and mappings
+        current_crops_dir_fixed = create_crops_dir(args.fixed_image_path, args.crops_dir)
+        current_crops_dir_moving = create_crops_dir(args.input_path, args.crops_dir)
+        current_mappings_dir, _, current_registered_crops_dir = create_checkpoint_dirs(
+            args.mappings_dir, 
+            args.registered_crops_dir, 
+            args.input_path
+        )
 
-    # Crop images and save them to the crops directories
-    crop_images(args.input_path, args.fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving, 
-                args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y)
+        # Crop images and save them to the crops directories
+        crop_images(args.input_path, args.fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving, 
+                    args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y)
 
-    # Perform diffeomorphic registration
-    diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, current_registered_crops_dir, args.max_workers)
+        # Perform diffeomorphic registration
+        diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, current_registered_crops_dir, args.max_workers)
     
     # Load registered crops
     registered_crops = []

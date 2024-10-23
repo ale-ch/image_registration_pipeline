@@ -15,7 +15,8 @@ include { convert_fixed_images } from './modules/local/image_conversion/main.nf'
 include { convert_moving_images } from './modules/local/image_conversion/main.nf'  
 include { affine_registration } from './modules/local/image_registration/main.nf' 
 include { diffeomorphic_registration } from './modules/local/image_registration/main.nf'
-
+include { export_image_1 } from './modules/local/export_image/main.nf'
+include { export_image_2 } from './modules/local/export_image/main.nf'
 workflow {
 
     /*
@@ -72,9 +73,16 @@ workflow {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
+    transformation1 = channel.of('affine')
+    transformation2 = channel.of('diffeomorphic')
+
     input_reg_1  = output_conv.combine(params_reg)
     affine_registration(input_reg_1)
-    
-    input_reg_2 = affine_registration.out
+    input_export_1 = affine_registration.out // concatenate parameters
+    export_image_1(input_export_1) 
+    input_reg_2 = export_image_1.out
     diffeomorphic_registration(input_reg_2)
+    input_export_2 = diffeomorphic_registration.out
+    println input_export_2
+    export_image_2(input_export_2)
 }

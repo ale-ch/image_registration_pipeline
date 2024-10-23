@@ -29,8 +29,8 @@ def process_crop(fixed_file, moving_file, current_crops_dir_fixed, current_crops
     Returns:
         mapping_diffeomorphic: The computed or loaded diffeomorphic mapping, or None if shapes do not match.
     """
-    match = re.search(r'\d+_\d+', fixed_file)
-    idx = match.group(0)
+    match = re.search(r'\d+_\d+_\d+', fixed_file)
+    idx = "_".join(match.group(0).split('_')[:-1]) # Get the first two indices
 
     # Construct the checkpoint path for storing/loading mappings
     checkpoint_path = os.path.join(checkpoint_dir, f'mapping_{idx}.pkl')
@@ -39,16 +39,16 @@ def process_crop(fixed_file, moving_file, current_crops_dir_fixed, current_crops
         moving_crop = load_pickle(os.path.join(current_crops_dir_moving, moving_file))  
 
         # Check for shape mismatch
-        if fixed_crop[1][:,:,2].shape != moving_crop[1][:,:,2].shape:
+        if fixed_crop[1].shape != moving_crop[1].shape:
             logger.error(f"Shape mismatch for crops at indices {idx}.")
             return None
 
         # Check for single valued crops (white areas)
-        if len(np.unique(fixed_crop[1][:,:,2])) == 1 or len(np.unique(moving_crop[1][:,:,2])) == 1:
+        if len(np.unique(fixed_crop[1])) == 1 or len(np.unique(moving_crop[1])) == 1:
             mapping_diffeomorphic = 0
         else:
             # Compute the diffeomorphic mapping
-            mapping_diffeomorphic = compute_diffeomorphic_mapping_dipy(fixed_crop[1][:, :, 2], moving_crop[1][:, :, 2])
+            mapping_diffeomorphic = compute_diffeomorphic_mapping_dipy(fixed_crop[1], moving_crop[1])
         
         del fixed_crop, moving_crop
         gc.collect()

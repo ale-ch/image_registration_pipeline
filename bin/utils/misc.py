@@ -2,6 +2,31 @@
 
 import os
 import re
+import shutil
+
+def empty_folder(folder_path):
+    if not os.path.exists(folder_path):
+        raise ValueError(f"The folder path '{folder_path}' does not exist.")
+    
+    if not os.path.isdir(folder_path):
+        raise ValueError(f"The path '{folder_path}' is not a directory.")
+    
+    # Iterate over the contents of the directory
+    for item in os.listdir(folder_path):
+        item_path = os.path.join(folder_path, item)
+        if os.path.isfile(item_path) or os.path.islink(item_path):
+            os.unlink(item_path)  # Remove file or link
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)  # Remove directory and its contents
+
+def get_indexed_filepaths(registered_crops_dir):
+    crops_filenames = os.listdir(registered_crops_dir)
+    crops_paths = sorted([os.path.join(registered_crops_dir, file) for file in crops_filenames])
+    indices = sorted([tuple(map(int, re.search(r'\d+_\d+_\d+', filename).group(0).split('_'))) for filename in crops_filenames])
+    
+    crops_paths = [(idx, path) for idx, path in zip(indices, crops_paths)]
+
+    return crops_paths
 
 def remove_file_extension(filename):
     """
@@ -19,7 +44,7 @@ def remove_file_extension(filename):
             break
     return filename
 
-def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=None, moving_image_path=None):
+def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=None, moving_image_path=None, transformation=''):
     """
     Create directories for storing mappings and registered crops based on the moving image path.
 
@@ -47,21 +72,19 @@ def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=Non
 
     # Initialize registered crops directories
     if root_registered_crops_dir is not None:
-        current_registered_crops_affine_dir = os.path.join(root_registered_crops_dir, 'affine', image_dirname, filename)
-        current_registered_crops_diffeo_dir = os.path.join(root_registered_crops_dir, 'diffeomorphic', image_dirname, filename)
 
-        # Create affine crops directory
-        os.makedirs(current_registered_crops_affine_dir, exist_ok=True)
+        current_registered_crops_dir = os.path.join(root_registered_crops_dir, transformation, image_dirname, filename)
+        current_registered_crops_no_overlap_dir = os.path.join(root_registered_crops_dir, transformation, 'no_overlap', image_dirname, filename)
 
-        # Create diffeomorphic crops directory
-        os.makedirs(current_registered_crops_diffeo_dir, exist_ok=True)
+        os.makedirs(current_registered_crops_dir, exist_ok=True)
+        os.makedirs(current_registered_crops_no_overlap_dir, exist_ok=True)
     else:
-        current_registered_crops_affine_dir = None
-        current_registered_crops_diffeo_dir = None
+        current_registered_crops_dir = None
+        current_registered_crops_no_overlap_dir = None
 
-    return current_mappings_dir, current_registered_crops_affine_dir, current_registered_crops_diffeo_dir
+    return current_mappings_dir, current_registered_crops_dir, current_registered_crops_no_overlap_dir
 
-def create_crops_dir(image_path, crops_dir):
+def get_crops_dir(image_path, crops_dir):
     """
     Create a directory path for storing image crops based on the given image path.
 

@@ -17,33 +17,31 @@ def process_crop(mapping_file, moving_file, checkpoint_dir=None):
         moving_file (list): Path to moving crop file.
         checkpoint_dir (str): Directory to save/load checkpoint files.
     """
-    match = re.search(r'\d+_\d+', mapping_file)
-    idx = match.group(0)
+    match = re.search(r'\d+_\d+_\d+', moving_file)
+    idx = match.group(0) # Get the first two indices
 
-    n_channels = 3  # Assuming all crops have the same number of channels
-    for ch in range(n_channels):
-        checkpoint_path = os.path.join(checkpoint_dir, f'registered_split_{idx}_{ch}.pkl')
-        if not os.path.exists(checkpoint_path):
-            moving_crop = load_pickle(moving_file)
-            mapping = load_pickle(mapping_file)
+    checkpoint_path = os.path.join(checkpoint_dir, f'registered_split_{idx}.pkl')
+    if not os.path.exists(checkpoint_path):
+        moving_crop = load_pickle(moving_file)
+        mapping = load_pickle(mapping_file)
 
-            mov_crop = moving_crop[1][:, :, ch]  # Extract the specific channel of the moving crop
-            mov_crop_idx = moving_crop[0]  # Get the index of the crop
+        mov_crop = moving_crop[1]  # Extract the specific channel of the moving crop
+        mov_crop_idx = moving_crop[0]  # Get the index of the crop
 
-            # Check for single valued array (such as white border)
-            if not len(np.unique(mov_crop)) == 1:
-            # Apply mappings
-                mapped_image_indexed = (mov_crop_idx + (ch,), apply_mapping(mapping, mov_crop, method='dipy'))
-            else:
-            # Return crop as is
-                mapped_image_indexed = (mov_crop_idx + (ch,), mov_crop)
-            
-            del moving_crop, mapping
-            gc.collect()
+        # Check for single valued array (such as white border)
+        if not len(np.unique(mov_crop)) == 1:
+        # Apply mappings
+            mapped_image_indexed = (mov_crop_idx, apply_mapping(mapping, mov_crop, method='dipy'))
+        else:
+        # Return crop as is
+            mapped_image_indexed = (mov_crop_idx, mov_crop)
+        
+        del moving_crop, mapping
+        gc.collect()
 
-            # Save checkpoint
-            save_pickle(mapped_image_indexed, checkpoint_path)
-            print(f"Saved checkpoint for i={mov_crop_idx}")
+        # Save checkpoint
+        save_pickle(mapped_image_indexed, checkpoint_path)
+        print(f"Saved checkpoint for i={mov_crop_idx}")
 
 
 def apply_mappings(mapping_files, moving_files, checkpoint_dir, max_workers=None):

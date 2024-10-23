@@ -4,13 +4,10 @@ import argparse
 import os 
 import logging
 from utils import logging_config
-from utils.pickle_utils import load_pickle
-from utils.image_cropping import crop_images
-from utils.wrappers.create_checkpoint_dirs import create_checkpoint_dirs, create_crops_dir
+from utils.image_cropping import crop_image_channels
+from utils.misc import create_checkpoint_dirs, get_crops_dir
 from utils.wrappers.compute_mappings import compute_mappings
 from utils.wrappers.apply_mappings import apply_mappings
-from utils.wrappers.export_image import export_image
-from utils.empty_folder import empty_folder
 
 # Set up logging configuration
 logging_config.setup_logging()
@@ -29,13 +26,18 @@ def diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving
         max_workers (int): Maximum number of workers for parallel processing.
     """
     # List of files in each directory
-    fixed_files = [os.path.join(current_crops_dir_fixed, file) for file in os.listdir(current_crops_dir_fixed)]
-    moving_files = [os.path.join(current_crops_dir_moving, file) for file in os.listdir(current_crops_dir_moving)]
+    fixed_files = sorted([os.path.join(current_crops_dir_fixed, file) for file in os.listdir(current_crops_dir_fixed)])
+    moving_files = sorted([os.path.join(current_crops_dir_moving, file) for file in os.listdir(current_crops_dir_moving)])
+
+    # Filter the files that end with '2.pkl'
+    fixed_files_dapi = [f for f in fixed_files if f.endswith('_2.pkl')]    
+    moving_files_dapi = [f for f in moving_files if f.endswith('_2.pkl')]  
     
     # Compute mappings for all crop pairs
-    compute_mappings(fixed_files, moving_files, current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, max_workers)
+    compute_mappings(fixed_files_dapi, moving_files_dapi, current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, max_workers)
 
-    mapping_files = [os.path.join(current_mappings_dir, file) for file in os.listdir(current_mappings_dir)]
+    n_channels = 3
+    mapping_files = sorted([os.path.join(current_mappings_dir, file) for file in os.listdir(current_mappings_dir)] * n_channels)
     apply_mappings(mapping_files, moving_files, current_registered_crops_dir, max_workers)
 
 
@@ -57,42 +59,29 @@ def main(args):
             logger.debug(f'Output directory created successfully: {output_dir_path}')
 
         # Create intermediate directories for crops and mappings
-        current_crops_dir_fixed = create_crops_dir(args.fixed_image_path, args.crops_dir)
-        current_crops_dir_moving = create_crops_dir(args.input_path, args.crops_dir)
-        current_mappings_dir, _, current_registered_crops_dir = create_checkpoint_dirs(
-            args.mappings_dir, 
-            args.registered_crops_dir, 
-            args.input_path
+        current_crops_dir_fixed = get_crops_dir(args.fixed_image_path, args.crops_dir_fixed)
+        current_crops_dir_moving = get_crops_dir(args.input_path, args.crops_dir_moving)
+
+        current_mappings_dir, current_registered_crops_dir, _ = create_checkpoint_dirs(
+            root_mappings_dir=args.mappings_dir, 
+            root_registered_crops_dir=args.registered_crops_dir, 
+            moving_image_path=args.input_path,
+            transformation='diffeomorphic'
         )
 
         # Crop images and save them to the crops directories
-        crop_images(args.input_path, args.fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving, 
-                    args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y)
+        crop_image_channels(args.input_path, args.fixed_image_path, current_crops_dir_fixed, 
+                    args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y, which_crop='fixed')
 
         # Perform diffeomorphic registration
         diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, current_registered_crops_dir, args.max_workers)
-    
-    # Load registered crops
-    registered_crops = []
-    for file in os.listdir(current_registered_crops_dir):
-        filepath = os.path.join(current_registered_crops_dir, file)
-        registered_crop = load_pickle(filepath)
-        registered_crops.append(registered_crop)
-    
-    # Stitch crops and export the full registered image
-    export_image(registered_crops, args.overlap_x, args.overlap_y, args.output_path)
-    logger.info(f'Image {args.input_path} processed successfully.')
-    
-    # Clear checkpoint directories if specified
-    if args.delete_checkpoints:
-        empty_folder(current_crops_dir_fixed)
-        logger.info(f'Directory {current_crops_dir_fixed} emptied successfully.')
-        empty_folder(current_crops_dir_moving)
-        logger.info(f'Directory {current_crops_dir_moving} emptied successfully.')
-        empty_folder(current_mappings_dir)
-        logger.info(f'Directory {current_mappings_dir} emptied successfully.')
-        empty_folder(current_registered_crops_dir)
-        logger.info(f'Directory {current_registered_crops_dir} emptied successfully.')
+
+        # # Clear checkpoint directories if specified
+        # if args.delete_checkpoints:
+        #     empty_folder(current_crops_dir_fixed)
+        #     logger.info(f'Directory {current_crops_dir_fixed} emptied successfully.')
+        #     empty_folder(current_mappings_dir)
+        #     logger.info(f'Directory {current_mappings_dir} emptied successfully.')
 
 if __name__ == "__main__":
     # Set up argument parser for command-line usage
@@ -103,7 +92,9 @@ if __name__ == "__main__":
                         help='Path to save the registered image.')
     parser.add_argument('--fixed-image-path', type=str, required=True, 
                         help='Path to the fixed image used for registration.')
-    parser.add_argument('--crops-dir', type=str, required=True,
+    parser.add_argument('--crops-dir-fixed', type=str, required=True,
+                        help='Directory where image crops will be saved.')
+    parser.add_argument('--crops-dir-moving', type=str, required=True,
                         help='Directory where image crops will be saved.')
     parser.add_argument('--mappings-dir', type=str, required=True, 
                         help='Root directory to save computed mappings.')

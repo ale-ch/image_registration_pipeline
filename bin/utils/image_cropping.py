@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 
 import os
-import re
 import gc
 import logging
 import tifffile
 import numpy as np
 from skimage.io import imread
-from utils.pickle_utils import save_pickle
+from utils.pickle_utils import load_pickle, save_pickle
 from utils import logging_config 
 
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
+
+
+"""
+Image cropping
+"""
 
 def crop_2d_array(array, crop_areas, crop_indices=None):
     """
@@ -234,50 +238,29 @@ def zero_pad_array(array, target_shape):
     
     return array
 
-def save_image_crops(image, crop_areas, output_dir):
-    """
-    Loops through each crop area, processes the crop, and saves each crop individually.
-    
-    Args:
-        image (ndarray): The input image (already padded if needed).
-        crop_areas (tuple): Tuple containing crop indices and crop dimensions (from get_crop_areas).
-        output_dir (str): Directory where crops will be saved.
-    """
-    # Check directory to save the crops
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)  # Create directory if it doesn't exist
-        logger.debug(f'Directory created: {output_dir}')
-    
-    # Loop through each crop and save it
-    for index, area in zip(crop_areas[0], crop_areas[1]):
-        logger.debug(f'Processing crop_{index[0]}_{index[1]}')
-        
-        # Crop the image using the specified crop area
-        crop = (index, crop_2d_array(image, crop_areas=area))
-        
-        # Save each crop individually with a unique name
-        crop_save_path = os.path.join(output_dir, f'crop_{index[0]}_{index[1]}.pkl')
-        save_pickle(crop, crop_save_path)  # Save the crop using pickle
-        
-        logger.debug(f'Saved crop_{index[0]}_{index[1]} to {crop_save_path}')
-
-def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving, crop_width_x, crop_width_y, overlap_x, overlap_y):
+def crop_image_channels(input_path, fixed_image_path, current_crops_dir, crop_width_x, crop_width_y, overlap_x, overlap_y, which_crop='fixed'):
     """
     Crops both the moving and fixed images and saves the crops to directories.
     
     Args:
         input_path (str): Path to the moving image.
         fixed_image_path (str): Path to the fixed image.
-        current_crops_dir_fixed (str): Directory where fixed image crops will be saved.
-        current_crops_dir_moving (str): Directory where moving image crops will be saved.
+        current_crops_dir (str): Directory where the image crops will be saved.
         crop_width_x (int): Width of each crop.
         crop_width_y (int): Height of each crop.
         overlap_x (int): Overlap between crops along the x-axis.
         overlap_y (int): Overlap between crops along the y-axis.
+        which_crop (str): Which image to crop. Either 'fixed' or 'moving'.
         
     Returns:
         tuple: Directories for fixed image crops and moving image crops. The saved arrays have shape (height, width, n_channels).
     """
+    # Define image to be loaded
+    if which_crop == 'fixed':
+        path_to_load = fixed_image_path
+    if which_crop == 'moving':
+        path_to_load = input_path
+
     # Get image shapes and compute padding
     mov_shape = get_tiff_image_shape(input_path)  # Shape of moving image
     fixed_shape = get_tiff_image_shape(fixed_image_path)  # Shape of fixed image
@@ -288,53 +271,158 @@ def crop_images(input_path, fixed_image_path, current_crops_dir_fixed, current_c
 
     # Pre-allocate the array to hold the padded images
     n_channels = 3  # Number of channels in the image
-
-    if not os.path.exists(current_crops_dir_fixed):
+    if not os.path.exists(current_crops_dir):
+        os.makedirs(current_crops_dir, exist_ok=True)
         # Fixed image: load, pad to size and crop
-        logger.debug(f"Loading fixed image {fixed_image_path}")
-        fixed_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
+        logger.debug(f"Loading image {path_to_load}")
+        image = imread(path_to_load)
         # Loop through each channel and apply padding
         for ch in range(n_channels):
             # Read the fixed image and select the current channel
-            fixed_image = imread(fixed_image_path)[:, :, ch]
-            
-            # Pad the fixed image
-            fixed_image = zero_pad_array(np.squeeze(fixed_image), padding_shape)
-            
-            # Store the padded image in the pre-allocated array
-            fixed_image_stacked[:, :, ch] = fixed_image
+            for index, area in zip(crop_areas[0], crop_areas[1]):
+                logger.debug(f'Processing crop_{index[0]}_{index[1]}_{ch}')
+        
+                # Crop the image using the specified crop area
+                crop = (
+                    index + (ch,), 
+                    crop_2d_array(zero_pad_array(np.squeeze(image[:,:,ch]), padding_shape), crop_areas=area)
+                )
 
-            # If the output directory for fixed crops doesn't exist, save the image crops.
-            save_image_crops(fixed_image_stacked, crop_areas, current_crops_dir_fixed)
+                # Save each crop individually with a unique name
+                crop_save_path = os.path.join(current_crops_dir, f'crop_{index[0]}_{index[1]}_{ch}.pkl')
+                save_pickle(crop, crop_save_path)  # Save the crop using pickle
+                
+                logger.debug(f'Saved crop_{index[0]}_{index[1]}_{ch} to {crop_save_path}')
 
-        del fixed_image_stacked  # Delete the array to free up memory
+        del image  # Delete the array to free up memory
         gc.collect()  # Force garbage collection
-    else:
-        # Fixed image: load, pad to size and crop
-        logger.debug(f"Fixed image found at {fixed_image_path}")
+
+
+"""
+Overlap removal
+"""
+
+import itertools
+from utils.misc import get_indexed_filepaths
+from concurrent.futures import ProcessPoolExecutor
+
+def remove_overlap(crop, indices: list, overlap: int, axis: int = 0):
+    """
+    Remove overlapping regions from adjacent crops along a specified axis.
+
+    Args:
+        crops (list): List of tuples where each tuple contains an index and a 2D numpy array.
+                      The index tuple consists of (row, column, image channel).
+        overlap (int): Size of overlap between adjacent crops.
+        axis (int): Axis along which to remove the overlap:
+                    - 0 for rows
+                    - 1 for columns
+
+    Returns:
+        list: List of tuples containing the adjusted crops without overlaps.
+    """
+    overlap_half_left = overlap // 2
+    overlap_half_right = overlap - overlap_half_left
+
+    idx, crop = crop[0], crop[1]
+
+    max_rows = max(idx[0] for idx in indices)
+    max_cols = max(idx[1] for idx in indices)
+
+    # Sort crops by row and then by column
+    indices = sorted(indices, key=lambda x: (x[0], x[1]))
+
+    start_row, end_row, start_col, end_col = 0, crop.shape[0], 0, crop.shape[1]
+
+    # Handle row overlap
+    if axis == 0:
+        if idx[0] != 0:  # If not the first crop in the row
+            start_row += overlap_half_left
+        if idx[0] != max_rows:  # If not the last crop in the row
+            end_row -= overlap_half_right
+
+    # Handle column overlap
+    elif axis == 1:
+        if idx[1] != 0:  # If not the first crop in the column
+            start_col += overlap_half_left
+        if idx[1] != max_cols:  # If not the last crop in the column
+            end_col -= overlap_half_right
+
+    # Extract the crop area without overlap
+    crop = crop[start_row:end_row, start_col:end_col]
     
+    return (idx, crop)
 
-    if not os.path.exists(current_crops_dir_moving):
-        # Moving image: load, pad to size and crop
-        logger.debug(f"Loading moving image {input_path}")
-        # Pre-allocate the array to hold the padded images
-        moving_image_stacked = np.empty((padding_shape[0], padding_shape[1], n_channels))  # Pre-allocate array
-        # Loop through each channel and apply padding
-        for ch in range(n_channels):
-            # Read the moving image and select the current channel
-            image = imread(input_path)[:, :, ch]
-            
-            # Pad the moving image
-            image = zero_pad_array(np.squeeze(image), padding_shape)
-            
-            # Store the padded image in the pre-allocated array
-            moving_image_stacked[:, :, ch] = image
+def get_stitching_positions(shapes: list):
+    """
+    Calculate the positions where each cropped image will be placed in the final stitched image.
 
-            # If the output directory for moving crops doesn't exist, save the image crops.
-            save_image_crops(moving_image_stacked, crop_areas, current_crops_dir_moving)
+    Args:
+        crops (list): List of tuples where each tuple contains an index and a 2D numpy array 
+                      representing the cropped image. The index tuple consists of (row, column, image channel).
 
-        del moving_image_stacked  # Delete the array to free up memory
-        gc.collect()  # Force garbage collection
+    Returns:
+        list: A list of (row, col) positions where each crop will be placed in the final stitched image.
+    """
+    # Determine the number of crop rows and columns
+    n_crop_rows = np.max([element[0][0] for element in shapes]) + 2
+    n_crop_cols = np.max([element[0][1] for element in shapes]) + 2
+
+    # Calculate row stitching positions
+    sorted_shapes = sorted(shapes, key=lambda x: x[0][1])
+    if n_crop_rows - 1 > 1:
+        crops_rows = [shape[0] for idx, shape in sorted_shapes][:n_crop_rows - 2]
     else:
-        logger.debug(f"Moving image found at {input_path}")
+        crops_rows = [shape[0] for idx, shape in sorted_shapes][:n_crop_rows - 1]
 
+    crops_rows = np.insert(crops_rows, 0, 0)
+    stitching_positions_h = np.cumsum(crops_rows)
+
+    # Calculate column stitching positions
+    sorted_shapes = sorted(shapes, key=lambda x: x[0][0])
+    if n_crop_cols - 1 > 1:
+        crops_cols = [shape[1] for idx, shape in sorted_shapes][:n_crop_cols - 2]
+    else:
+        crops_cols = [shape[1] for idx, shape in sorted_shapes][:n_crop_cols - 1]
+
+    crops_cols = np.insert(crops_cols, 0, 0)
+    stitching_positions_v = np.cumsum(crops_cols)
+
+    # Generate stitching positions
+    stitching_positions = list(itertools.product(stitching_positions_h, stitching_positions_v))
+
+    return stitching_positions
+
+def process_crop(path, indices, overlap_x, overlap_y, checkpoint_dir):
+    crop = load_pickle(path)
+    # Assuming 'indices' are defined or passed as arguments if necessary
+    crop = remove_overlap(crop, indices, overlap_x, 0)
+    crop = remove_overlap(crop, indices, overlap_y, 1)
+    checkpoint_path = os.path.join(checkpoint_dir, f'crop_{crop[0][0]}_{crop[0][1]}_{crop[0][2]}.pkl')
+    shape_info = (crop[0], crop[1].shape)
+    save_pickle(crop, checkpoint_path)
+    return shape_info
+
+def remove_crops_overlap(registered_crops_dir, checkpoint_dir, overlap_x, overlap_y, max_workers):
+    n_channels = 3
+    crops_paths = get_indexed_filepaths(registered_crops_dir)
+    
+    # List to store the resulting shapes for stitching
+    shapes = []
+    
+    # Create a ProcessPoolExecutor to parallelize crop processing
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        futures = []
+        for ch in range(n_channels):
+            indices = [path[0] for path in crops_paths if path[0][2] == ch]
+            paths = [path[1] for path in crops_paths if path[0][2] == ch]
+            for path in paths:
+                # Submit the crop processing to the pool
+                futures.append(executor.submit(process_crop, path, indices, overlap_x, overlap_y, checkpoint_dir))
+        
+        # Collect the results as they complete
+        for future in futures:
+            shapes.append(future.result())
+    
+    positions = get_stitching_positions(shapes)
+    return positions

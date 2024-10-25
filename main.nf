@@ -8,15 +8,14 @@ nextflow.enable.dsl=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { parse_csv } from './bin/utils/workflow.nf'
-include { get_diffeomorphic_registration_params } from './bin/utils/workflow.nf'     
-include { get_conversion_params } from './bin/utils/workflow.nf'                        
-include { convert_fixed_images } from './modules/local/image_conversion/main.nf'
-include { convert_moving_images } from './modules/local/image_conversion/main.nf'  
+include { parse_csv } from './bin/utils/workflow.nf'       
+include { convert_to_h5 } from './modules/local/image_conversion/main.nf'               
+include { convert_to_ome_tiff } from './modules/local/image_conversion/main.nf'
 include { affine_registration } from './modules/local/image_registration/main.nf' 
 include { diffeomorphic_registration } from './modules/local/image_registration/main.nf'
-include { export_image_1 } from './modules/local/export_image/main.nf'
-include { export_image_2 } from './modules/local/export_image/main.nf'
+include { export_image as export_image_1 } from './modules/local/export_image/main.nf'
+include { export_image as export_image_2 } from './modules/local/export_image/main.nf'
+
 workflow {
 
     /*
@@ -28,44 +27,22 @@ workflow {
     parsed_lines = parse_csv(params.sample_sheet_path)
 
     // Prepare conversion parameters from parsed CSV data
-    params_shared = parsed_lines.map { row ->
+    params_parsed = parsed_lines.map { row ->
         tuple(
-            row.converted,
-            row.registered,
-            row.fixed_image,
-            row.input_path_conv, 
-            row.output_path_conv,  
-            row.output_path_reg_1,
-            row.output_path_reg_2, 
-            row.fixed_image_path
+            row.patient_id,
+            row.fixed_image_path,
+            row.input_path,
+            row.output_path
         )
     }
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        DEFINE PARAMETERS
+        CONVERSION TO H5
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    // Conversion
-    params_conv = get_conversion_params()
-    
-    // Registration
-    params_reg = get_diffeomorphic_registration_params()
-    
-    /*
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        IMAGE CONVERSION
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    */
-
-    // Combine parsed CSV data with additional conversion parameters
-    input_conv = params_shared.combine(params_conv)
-
-    convert_fixed_images(input_conv)
-    convert_moving_images(input_conv)
-
-    output_conv = convert_moving_images.out
+    convert_to_h5(params_parsed)
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,16 +50,27 @@ workflow {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    transformation1 = channel.of('affine')
-    transformation2 = channel.of('diffeomorphic')
+    affine_registration(convert_to_h5.out)
+    export_image_1(affine_registration.out ) 
+    diffeomorphic_registration(export_image_1.out)
+    export_image_2(diffeomorphic_registration.out)
 
-    input_reg_1  = output_conv.combine(params_reg)
-    affine_registration(input_reg_1)
-    input_export_1 = affine_registration.out // concatenate parameters
-    export_image_1(input_export_1) 
-    input_reg_2 = export_image_1.out
-    diffeomorphic_registration(input_reg_2)
-    input_export_2 = diffeomorphic_registration.out
-    println input_export_2
-    export_image_2(input_export_2)
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMAGE STACKING
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    // stack_images(export_image_2.out)
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        CONVERSION TO OME.TIFF
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    // input_conv = convert_to_ome_tiff(
+    //     stack_images.out
+    //         .combine(params_conv)
+    // )
 }

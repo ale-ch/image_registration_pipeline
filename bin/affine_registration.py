@@ -5,19 +5,18 @@ import gc
 import argparse
 import logging
 import os
-import tifffile as tiff
 from utils import logging_config
-from skimage.io import imread
 from utils.misc import create_checkpoint_dirs
-from utils.image_cropping import load_tiff_region
-from utils.image_cropping import get_tiff_image_shape
+from utils.image_cropping import load_h5_region
+from utils.image_cropping import get_image_file_shape
 from utils.image_cropping import get_padding_shape
 from utils.image_cropping import zero_pad_array
 from utils.image_cropping import crop_2d_array
 from utils.image_cropping import get_crop_areas
 from utils.image_mapping import compute_affine_mapping_cv2
 from utils.wrappers.apply_mappings import apply_mapping
-from utils.pickle_utils import save_pickle
+from utils.io_tools import save_pickle, load_nd2, load_h5
+
 
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
@@ -65,8 +64,8 @@ def get_dense_crop(input_path, fixed_image_path, crop_areas):
     """
     for area in crop_areas:
         # Load specific region of the images for comparison
-        moving_crop = load_tiff_region(input_path, area)
-        fixed_crop = load_tiff_region(fixed_image_path, area)
+        moving_crop = load_h5_region(input_path, area)
+        fixed_crop = load_h5_region(fixed_image_path, area)
 
         # Select DAPI channel (channel 2)
         moving_crop = np.squeeze(moving_crop[:, :, 2])
@@ -92,7 +91,8 @@ def get_dense_crop(input_path, fixed_image_path, crop_areas):
 
     return fixed_crop, moving_crop
 
-def affine_registration(input_path, output_path, fixed_image_path, current_registered_crops_dir, crop_width_x, crop_width_y, overlap_x, overlap_y, crop=True, crop_size=4000, n_features=2000):
+def affine_registration(input_path, fixed_image_path, current_registered_crops_dir, 
+                        crop_width_x, crop_width_y, overlap_x, overlap_y, crop=True, crop_size=4000, n_features=2000):
     """
     Registers moving and fixed images using an affine transformation and saves the registered image.
 
@@ -105,18 +105,13 @@ def affine_registration(input_path, output_path, fixed_image_path, current_regis
         crop_size (int): Size of the subregion for affine mapping.
         n_features (int): Number of features to use for the affine transformation.
     """
-    logger.info(f'Output path: {output_path}')
-
-    # Ensure output directory exists
-    output_dir_path = os.path.dirname(output_path)
-    if not os.path.exists(output_dir_path):
-        os.makedirs(output_dir_path)
-        logger.debug(f'Output directory created successfully: {output_dir_path}')
-
     # Get image shape and determine crop areas
-    mov_shape = get_tiff_image_shape(input_path)
+    input_path = input_path.replace('.nd2', '.h5')
+    fixed_image_path = fixed_image_path.replace('.nd2', '.h5')
+
+    mov_shape = get_image_file_shape(input_path)
     print(f"Moving image shape: {mov_shape}")
-    fixed_shape = get_tiff_image_shape(fixed_image_path)
+    fixed_shape = get_image_file_shape(fixed_image_path)
     print(f"Fixed image shape: {fixed_shape}")
     padding_shape = get_padding_shape(mov_shape, fixed_shape)
     print("PADDING SHAPE: ", padding_shape)
@@ -135,8 +130,7 @@ def affine_registration(input_path, output_path, fixed_image_path, current_regis
 
     # Load and pad the moving image
     logger.debug(f"Loading moving image {input_path}")
-    moving_image = imread(input_path)
-
+    moving_image = load_h5(input_path)
     # Apply the affine transformation to each crop and channel
     n_channels = 3
     for ch in range(n_channels):
@@ -164,8 +158,13 @@ def main(args):
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
+    filename = os.path.basename(args.input_path).replace('.nd2', '.h5') # Name of the output file 
+    dirname = os.path.basename(os.path.dirname(args.input_path)) # Name of the parent directory to output file
+    file_output_dir = os.path.join(args.output_dir, 'affine', dirname) # Path to parent directory of the output file
+    output_path = os.path.join(file_output_dir, filename) # Path to output output file
     
-    if not os.path.exists(args.output_path):
+    if not os.path.exists(output_path):
         # Create checkpoint directories
         _, current_registered_crops_dir, current_registered_crops_no_overlap_dir = create_checkpoint_dirs(
             root_registered_crops_dir=args.registered_crops_dir, 
@@ -174,7 +173,7 @@ def main(args):
         )
     
         # Perform affine registration
-        affine_registration(args.input_path, args.output_path, args.fixed_image_path, current_registered_crops_dir, 
+        affine_registration(args.input_path, args.fixed_image_path, current_registered_crops_dir, 
                             args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y,
                             args.crop, args.crop_size, args.n_features)
         
@@ -184,7 +183,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Register images from input paths and save them to output paths.")
     parser.add_argument('--input-path', type=str, required=True, 
                         help='Path to the input (moving) image.')
-    parser.add_argument('--output-path', type=str, required=True, 
+    parser.add_argument('--output-dir', type=str, required=True, 
                         help='Path to save the registered image.')
     parser.add_argument('--fixed-image-path', type=str, required=True, 
                         help='Path to the fixed image used for registration.')
@@ -200,9 +199,9 @@ if __name__ == '__main__':
                         help='Overlap of each crop along the y-axis.')
     parser.add_argument('--crop', action='store_false', 
                         help='Whether to compute the affine mapping using a smaller subregion of the image.')
-    parser.add_argument('--crop-size', type=int, default=1000, 
+    parser.add_argument('--crop-size', type=int, default=4000, 
                         help='Size of the subregion to use for affine mapping (if cropping is enabled).')
-    parser.add_argument('--n-features', type=int, default=500, 
+    parser.add_argument('--n-features', type=int, default=2000, 
                         help='Number of features to detect for computing the affine transformation.')
     parser.add_argument('--logs-dir', type=str, required=True, 
                         help='Directory to store log files.')

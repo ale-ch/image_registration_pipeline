@@ -2,79 +2,56 @@
     Convert nd2 files into multiple resolution hierarchical tiff files.
 */
 
-process convert_fixed_images {
+process convert_to_h5 {
     memory "1G"
     cpus 1
-    publishDir "${params.output_dir_conv}", mode: "copy"
+    publishDir "${params.input_dir}", mode: "copy"
     // container "docker://yinxiu/bftools:latest"
-    tag "image_conversion"
+    tag "conversion_h5"
 
     input:
-    tuple val(converted),
-        val(registered),
-        val(fixed_image),
-        val(input_path_conv),
-        val(output_path_conv), 
-        val(output_path_reg_1),
-        val(output_path_reg_2), 
+    tuple val(patient_id),
         val(fixed_image_path),
-        val(params.tilex),
-        val(params.tiley),
-        val(params.pyramid_resolutions),
-        val(params.pyramid_scale)
+        val(input_path),
+        val(output_path)
+    
+    output:
+    tuple val(patient_id),
+        val(fixed_image_path),
+        val(input_path),
+        val(output_path)
 
     script:
     """
-    if ([[ "${fixed_image}" == "True" || "${fixed_image}" == "TRUE" ]] && \
-    [[ "${converted}" == "False" || "${converted}" == "FALSE" ]]); then 
-    bfconvert -noflat -bigtiff \
-        -tilex "${params.tilex}" \
-        -tiley "${params.tiley}" \
-        -pyramid-resolutions "${params.pyramid_resolutions}" \
-        -pyramid-scale "${params.pyramid_scale}" \
-        "${input_path_conv}" "${output_path_conv}"
-    fi
+    convert_to_h5.py \
+        --input-path "${input_path}" \
+        --logs-dir "${params.logs_dir}" \
+        --delete-src
     """
 }
 
-process convert_moving_images {
+process convert_to_ome_tiff {
     memory "1G"
     cpus 1
     publishDir "${params.output_dir_conv}", mode: "copy"
     // container "docker://yinxiu/bftools:latest"
-    tag "image_conversion"
+    tag "conversion_ome"
 
     input:
-    tuple val(converted), 
-        val(registered),
-        val(fixed_image),
-        val(input_path_conv), 
-        val(output_path_conv),
-        val(output_path_reg_1),
-        val(output_path_reg_2),
+    tuple val(patient_id),
         val(fixed_image_path),
-        val(params.tilex),
-        val(params.tiley),
-        val(params.pyramid_resolutions),
-        val(params.pyramid_scale)
-
-    output:
-    tuple val(fixed_image),
-        val(output_path_conv),
-        val(output_path_reg_1),
-        val(output_path_reg_2),
-        val(fixed_image_path)
+        val(input_path),
+        val(output_path)
 
     script:
     """
-    if ([[ "${fixed_image}" == "False" || "${fixed_image}" == "FALSE" ]] && \
-    [[ "${converted}" == "False" || "${converted}" == "FALSE" ]]); then 
-    bfconvert -noflat -bigtiff \
-        -tilex "${params.tilex}" \
-        -tiley "${params.tiley}" \
-        -pyramid-resolutions "${params.pyramid_resolutions}" \
-        -pyramid-scale "${params.pyramid_scale}" \
-        "${input_path_conv}" "${output_path_conv}"
+    if [ ! -f "${output_path}" ]; then
+        bfconvert -noflat -bigtiff \
+            -tilex "${params.tilex}" \
+            -tiley "${params.tiley}" \
+            -pyramid-resolutions "${params.pyramid_resolutions}" \
+            -pyramid-scale "${params.pyramid_scale}" \
+            "${input_path}" "${output_path}"
     fi
     """
 }

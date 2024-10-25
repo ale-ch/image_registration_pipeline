@@ -15,45 +15,23 @@ process affine_registration {
     tag "registration_1"
     
     input:
-    tuple val(fixed_image),
-        val(output_path_conv),
-        val(output_path_reg_1),
-        val(output_path_reg_2),
+    tuple val(patient_id),
         val(fixed_image_path),
-        val(params.crops_dir),
-        val(params.mappings_dir),
-        val(params.registered_crops_dir),
-        val(params.crop_width_x),
-        val(params.crop_width_y),
-        val(params.overlap_x),
-        val(params.overlap_y),
-        val(params.max_workers),
-        val(params.delete_checkpoints),
-        val(params.logs_dir)
+        val(input_path),
+        val(output_path)
 
     output:
-    tuple val(fixed_image),
-        val(output_path_conv),
-        val(output_path_reg_1),
-        val(output_path_reg_2),
+    tuple val(patient_id),
         val(fixed_image_path),
-        val(params.crops_dir),
-        val(params.mappings_dir),
-        val(params.registered_crops_dir),
-        val(params.crop_width_x),
-        val(params.crop_width_y),
-        val(params.overlap_x),
-        val(params.overlap_y),
-        val(params.max_workers),
-        val(params.delete_checkpoints),
-        val(params.logs_dir)
+        val(input_path),
+        val(output_path)
 
     script:
     """
-    if [ "${fixed_image}" == "False" ] || [ "${fixed_image}" == "FALSE" ]; then
+    if [ "${input_path}" != "${fixed_image_path}" ]; then
         affine_registration.py \
-            --input-path "${output_path_conv}" \
-            --output-path "${output_path_reg_1}" \
+            --input-path "${input_path}" \
+            --output-dir "${params.output_dir_reg}" \
             --fixed-image-path "${fixed_image_path}" \
             --registered-crops-dir "${params.registered_crops_dir}" \
             --crop-width-x "${params.crop_width_x}" \
@@ -78,39 +56,23 @@ process diffeomorphic_registration {
     tag "registration_2"
     
     input:
-    tuple val(fixed_image),
-        val(output_path_reg_1),
-        val(output_path_reg_2),
+    tuple val(patient_id),
         val(fixed_image_path),
-        val(params.crops_dir),
-        val(params.mappings_dir),
-        val(params.registered_crops_dir),
-        val(params.crop_width_x),
-        val(params.crop_width_y),
-        val(params.overlap_x),
-        val(params.overlap_y),
-        val(params.max_workers),
-        val(params.delete_checkpoints),
-        val(params.logs_dir)
+        val(input_path),
+        val(output_path)
     
     output:
-    tuple val(fixed_image),
-        val(output_path_reg_1),
-        val(output_path_reg_2),
+    tuple val(patient_id),
         val(fixed_image_path),
-        val(params.registered_crops_dir),
-        val(params.overlap_x),
-        val(params.overlap_y),
-        val(params.max_workers),
-        val(params.delete_checkpoints),
-        val(params.logs_dir)
+        val(input_path),
+        val(output_path)
 
     script:
     """
-    if [ "${fixed_image}" == "False" ] || [ "${fixed_image}" == "FALSE" ]; then
+    if [ "${input_path}" != "${fixed_image_path}" ]; then
         diffeomorphic_registration.py \
-            --input-path "${output_path_reg_1}" \
-            --output-path "${output_path_reg_2}" \
+            --input-path "${input_path}" \
+            --output-dir "${params.output_dir_reg}" \
             --fixed-image-path "${fixed_image_path}" \
             --crops-dir-fixed "${params.crops_dir_fixed}" \
             --crops-dir-moving "${params.crops_dir_moving}" \

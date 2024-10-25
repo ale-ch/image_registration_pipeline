@@ -7,7 +7,7 @@ import re
 import gc
 from utils import logging_config
 from concurrent.futures import ProcessPoolExecutor
-from utils.pickle_utils import load_pickle, save_pickle
+from utils.io_tools import load_pickle, save_pickle
 from utils.image_mapping import compute_diffeomorphic_mapping_dipy
 
 # Setup logging configuration

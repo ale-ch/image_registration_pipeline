@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-from utils.pickle_utils import load_pickle
+from utils.io_tools import load_pickle
 from utils.misc import get_indexed_filepaths
 from concurrent.futures import ProcessPoolExecutor
 

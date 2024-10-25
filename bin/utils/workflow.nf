@@ -6,15 +6,9 @@ def parse_csv(csv_file_path) {
         .map { row ->
             return [
                 patient_id          : row.patient_id,           // Patient identifier
-                input_path_conv     : row.input_path_conv,      // Input path for conversion
-                output_path_conv    : row.output_path_conv,     // Output path for conversion
-                converted           : row.converted,            // Conversion status
                 fixed_image_path    : row.fixed_image_path,     // Path to fixed image used in registration
-                input_path_reg      : row.input_path_reg,       // Input path for registration
-                output_path_reg_1   : row.output_path_reg_1,    // Output path for affine registration
-                output_path_reg_2   : row.output_path_reg_2,    // Output path for elastic registration
-                registered          : row.registered,           // Registration status
-                fixed_image         : row.fixed_image           // Flag for fixed image
+                input_path          : row.input_path,       // Input path for registration
+                output_path         : row.output_path     // Output path for conversion
             ]
         }
 }

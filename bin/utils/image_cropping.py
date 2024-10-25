@@ -4,9 +4,10 @@ import os
 import gc
 import logging
 import tifffile
+import nd2
+import h5py
 import numpy as np
-from skimage.io import imread
-from utils.pickle_utils import load_pickle, save_pickle
+from utils.io_tools import load_pickle, save_pickle, load_h5
 from utils import logging_config 
 
 logging_config.setup_logging()
@@ -185,7 +186,27 @@ def load_tiff_region(path, loading_region):
     
     return multi_channel_image
 
-def get_tiff_image_shape(tiff_path):
+def load_h5_region(file_path, loading_region):
+    """
+    Read a specific region from an HDF5 file.
+    
+    Parameters:
+    -----------
+    file_path : str
+        Path to the HDF5 file
+    dataset_name : str
+        Name of the dataset in the HDF5 file
+    x_start, x_end : int
+        Start and end coordinates for x (columns)
+    y_start, y_end : int
+        Start and end coordinates for y (rows)
+    """
+
+    start_row, end_row, start_col, end_col = loading_region
+    with h5py.File(file_path, 'r') as f:
+        return f['dataset'][start_col:end_col, start_row:end_row]
+
+def get_image_file_shape(tiff_path):
     """
     Get the width and height of a TIFF image without fully loading the image.
     
@@ -199,6 +220,58 @@ def get_tiff_image_shape(tiff_path):
         image_shape = tiff.pages[0].shape  # (height, width)
         width, height = image_shape[1], image_shape[0]  # Extract width and height
     return width, height
+
+def get_nd2_image_shape(nd2_path):
+    """
+    Get the width and height of the first image in an ND2 file without fully loading the image.
+
+    Parameters:
+        nd2_path (str): Path to the ND2 image.
+
+    Returns:
+        tuple: (width, height) of the first image.
+    """
+    with nd2.ND2File(nd2_path) as nd2_file:
+        # Get the dimensions of the first image
+        first_image_shape = nd2_file.asarray()[0].shape  # (channels, height, width) format
+        
+        # Assuming the first image is the one we want, extract height and width
+        height, width = first_image_shape[1], first_image_shape[2]  # (channels, height, width)
+        
+    return width, height
+
+def get_image_file_shape(path, format='.h5'):
+    """
+    Get the width and height of a TIFF image without fully loading the image.
+    
+    Parameters:
+        tiff_path (str): Path to the TIFF image.
+    
+    Returns:
+        tuple: (width, height) of the image.
+    """
+
+    if format == 'tiff' or format == '.tiff':
+        with tifffile.TiffFile(path) as tiff:
+            image_shape = tiff.pages[0].shape  # (height, width)
+            width, height = image_shape[1], image_shape[0]  # Extract width and height
+    
+    if format == 'nd2' or format == '.nd2':
+        with nd2.ND2File(path) as nd2_file:
+                # Get the dimensions of the first image
+                first_image_shape = nd2_file.asarray()[0].shape  # (channels, height, width) format
+                
+                # Assuming the first image is the one we want, extract height and width
+                height, width = first_image_shape[1], first_image_shape[2]  # (channels, height, width)
+
+    if format == '.h5' or format == 'h5':
+        with h5py.File(path, 'r') as f:
+            shape = f['dataset'].shape
+            height, width = shape[0], shape[1]
+        
+    return width, height
+
+
 
 def get_padding_shape(shape1, shape2):
     """
@@ -262,8 +335,8 @@ def crop_image_channels(input_path, fixed_image_path, current_crops_dir, crop_wi
         path_to_load = input_path
 
     # Get image shapes and compute padding
-    mov_shape = get_tiff_image_shape(input_path)  # Shape of moving image
-    fixed_shape = get_tiff_image_shape(fixed_image_path)  # Shape of fixed image
+    mov_shape = get_image_file_shape(input_path)  # Shape of moving image
+    fixed_shape = get_image_file_shape(fixed_image_path)  # Shape of fixed image
     padding_shape = get_padding_shape(mov_shape, fixed_shape)  # Calculate padding shape
 
     # Compute crop areas
@@ -275,7 +348,7 @@ def crop_image_channels(input_path, fixed_image_path, current_crops_dir, crop_wi
         os.makedirs(current_crops_dir, exist_ok=True)
         # Fixed image: load, pad to size and crop
         logger.debug(f"Loading image {path_to_load}")
-        image = imread(path_to_load)
+        image = load_h5(path_to_load)
         # Loop through each channel and apply padding
         for ch in range(n_channels):
             # Read the fixed image and select the current channel
@@ -296,7 +369,6 @@ def crop_image_channels(input_path, fixed_image_path, current_crops_dir, crop_wi
 
         del image  # Delete the array to free up memory
         gc.collect()  # Force garbage collection
-
 
 """
 Overlap removal

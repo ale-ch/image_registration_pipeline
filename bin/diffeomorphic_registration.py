@@ -48,47 +48,47 @@ def main(args):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    logger.info(f'Input path: {args.input_path}')
-    logger.info(f'Output path: {args.output_path}')
-    
-    if not os.path.exists(args.output_path):
+    input_path = args.input_path.replace('.nd2', '.h5')
+    fixed_image_path = args.fixed_image_path.replace('.nd2', '.h5')
+
+    filename = os.path.basename(input_path) # Name of the output file 
+    dirname = os.path.basename(os.path.dirname(input_path)) # Name of the parent directory to output file
+
+    input_path = os.path.join(args.output_dir, 'affine', dirname, filename) # Path to input file
+    output_path = os.path.join(args.output_dir, 'diffeomorphic', dirname, filename) # Path to output file
+
+    if not os.path.exists(output_path):
         # Check if output image directory exists, create it if not
-        output_dir_path = os.path.dirname(args.output_path)
+        output_dir_path = os.path.dirname(output_path)
         if not os.path.exists(output_dir_path):
             os.makedirs(output_dir_path)
             logger.debug(f'Output directory created successfully: {output_dir_path}')
 
         # Create intermediate directories for crops and mappings
-        current_crops_dir_fixed = get_crops_dir(args.fixed_image_path, args.crops_dir_fixed)
-        current_crops_dir_moving = get_crops_dir(args.input_path, args.crops_dir_moving)
+        current_crops_dir_fixed = get_crops_dir(fixed_image_path, args.crops_dir_fixed)
+        current_crops_dir_moving = get_crops_dir(input_path, args.crops_dir_moving)
 
         current_mappings_dir, current_registered_crops_dir, _ = create_checkpoint_dirs(
             root_mappings_dir=args.mappings_dir, 
             root_registered_crops_dir=args.registered_crops_dir, 
-            moving_image_path=args.input_path,
+            moving_image_path=input_path,
             transformation='diffeomorphic'
         )
 
         # Crop images and save them to the crops directories
-        crop_image_channels(args.input_path, args.fixed_image_path, current_crops_dir_fixed, 
+        crop_image_channels(input_path, fixed_image_path, current_crops_dir_fixed, 
                     args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y, which_crop='fixed')
 
         # Perform diffeomorphic registration
         diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, current_registered_crops_dir, args.max_workers)
 
-        # # Clear checkpoint directories if specified
-        # if args.delete_checkpoints:
-        #     empty_folder(current_crops_dir_fixed)
-        #     logger.info(f'Directory {current_crops_dir_fixed} emptied successfully.')
-        #     empty_folder(current_mappings_dir)
-        #     logger.info(f'Directory {current_mappings_dir} emptied successfully.')
 
 if __name__ == "__main__":
     # Set up argument parser for command-line usage
     parser = argparse.ArgumentParser(description="Register images from input paths and save them to output paths.")
     parser.add_argument('--input-path', type=str, required=True, 
                         help='Path to the input (moving) image.')
-    parser.add_argument('--output-path', type=str, required=True, 
+    parser.add_argument('--output-dir', type=str, required=True, 
                         help='Path to save the registered image.')
     parser.add_argument('--fixed-image-path', type=str, required=True, 
                         help='Path to the fixed image used for registration.')

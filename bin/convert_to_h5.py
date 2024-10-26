@@ -10,10 +10,10 @@ def convert_to_h5(src, dst, input_ext='.nd2'):
         data = load_nd2(src)
 
     ####### TEMPORARY ---- REMEMBER TO REMOVE ##########
-    data = crop_2d_array(data, (0, 2000, 0, 2000))
+    # data = crop_2d_array(data, (0, 2000, 0, 2000))
     ####################################################
 
-    save_h5(data, dst)
+        save_h5(data, dst)
 
 def main(args): 
     output_path = args.input_path.replace('.nd2', '.h5')

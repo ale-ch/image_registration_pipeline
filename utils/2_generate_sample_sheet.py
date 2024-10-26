@@ -25,7 +25,7 @@ def process_files(work_dir, input_dir=None, output_dir=None, output_csv="output.
     # Step 1: Walk through the input directory and collect file information
     for root, dirs, files in os.walk(input_dir):
         for file in files:
-            if file.endswith('.nd2'):  # Process only .nd2 files
+            if file.endswith('.nd2') or file.endswith('.h5'):  # Process .nd2 or .h5 files
                 patient_id = file.split('_')[0]
                 input_path = os.path.join(root, file)
                 
@@ -33,8 +33,8 @@ def process_files(work_dir, input_dir=None, output_dir=None, output_csv="output.
                 date = extract_date_from_path(input_path)
                 
                 # Define expected paths based on the directory structure
-                output_path = os.path.join(work_dir, 'data/output/image_conversion', input_path.replace(input_dir, '').lstrip('/').replace('.nd2', '.ome.tiff'))
-                            
+                # output_path = os.path.join(work_dir, 'data/output/image_conversion', input_path.replace(input_dir, '').lstrip('/').replace('.nd2', '.ome.tiff'))
+                output_path = os.path.join(work_dir, 'data/output/image_conversion', re.sub(r'\.(nd2|h5)$', '.ome.tiff', input_path.replace(input_dir, '').lstrip('/')))           
                 # Store data with date
                 patient_data[patient_id].append({
                     'patient_id': patient_id,

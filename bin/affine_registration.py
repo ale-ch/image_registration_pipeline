@@ -106,9 +106,6 @@ def affine_registration(input_path, fixed_image_path, current_registered_crops_d
         n_features (int): Number of features to use for the affine transformation.
     """
     # Get image shape and determine crop areas
-    input_path = input_path.replace('.nd2', '.h5')
-    fixed_image_path = fixed_image_path.replace('.nd2', '.h5')
-
     mov_shape = get_image_file_shape(input_path)
     print(f"Moving image shape: {mov_shape}")
     fixed_shape = get_image_file_shape(fixed_image_path)
@@ -138,7 +135,10 @@ def affine_registration(input_path, fixed_image_path, current_registered_crops_d
             checkpoint_filename = os.path.join(current_registered_crops_dir, f'affine_split_{idx[0]}_{idx[1]}_{ch}.pkl')
             if not os.path.exists(checkpoint_filename):
                 crop = crop_2d_array(
-                    array=zero_pad_array(np.squeeze(moving_image[:, :, ch]), padding_shape),
+                    array=zero_pad_array(
+                        array=np.squeeze(moving_image[:, :, ch]), 
+                        target_shape=padding_shape
+                    ),
                     crop_areas=area
                 )
 
@@ -159,8 +159,11 @@ def main(args):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    filename = os.path.basename(args.input_path).replace('.nd2', '.h5') # Name of the output file 
-    dirname = os.path.basename(os.path.dirname(args.input_path)) # Name of the parent directory to output file
+    input_path = args.input_path.replace('.nd2', '.h5')
+    fixed_image_path = args.fixed_image_path.replace('.nd2', '.h5')
+
+    filename = os.path.basename(input_path) # Name of the output file 
+    dirname = os.path.basename(os.path.dirname(input_path)) # Name of the parent directory to output file
     file_output_dir = os.path.join(args.output_dir, 'affine', dirname) # Path to parent directory of the output file
     output_path = os.path.join(file_output_dir, filename) # Path to output output file
     
@@ -168,12 +171,12 @@ def main(args):
         # Create checkpoint directories
         _, current_registered_crops_dir, current_registered_crops_no_overlap_dir = create_checkpoint_dirs(
             root_registered_crops_dir=args.registered_crops_dir, 
-            moving_image_path=args.input_path,
+            moving_image_path=input_path,
             transformation='affine'
         )
     
         # Perform affine registration
-        affine_registration(args.input_path, args.fixed_image_path, current_registered_crops_dir, 
+        affine_registration(input_path, fixed_image_path, current_registered_crops_dir, 
                             args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y,
                             args.crop, args.crop_size, args.n_features)
         

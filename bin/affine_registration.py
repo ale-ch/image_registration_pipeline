@@ -21,6 +21,11 @@ from utils.io_tools import save_pickle, load_nd2, load_h5
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
+def binarize_image(image, thresh=None, alpha=1.5):
+    if thresh == None:
+        thresh = np.mean(image)
+    return (image > thresh * alpha).astype('int8')
+
 def get_cropping_params(shape):
     """
     Determines cropping parameters based on the size of the input image.
@@ -50,7 +55,7 @@ def get_cropping_params(shape):
 
     return crop_width_x, crop_width_y, overlap_x, overlap_y
 
-def get_dense_crop(input_path, fixed_image_path, crop_areas):
+def get_dense_crop(input_path, fixed_image_path, crop_areas, nonzero_thresh=0.15):
     """
     Loads and pads image crops, ensuring minimal zero-valued pixels in the moving image.
     
@@ -77,22 +82,16 @@ def get_dense_crop(input_path, fixed_image_path, crop_areas):
         padding_shape = get_padding_shape(moving_shape, fixed_shape)
         moving_crop = zero_pad_array(moving_crop, padding_shape)
         fixed_crop = zero_pad_array(fixed_crop, padding_shape)
-
-        # Check the proportion of zero-valued pixels in the moving crop
-        moving_crop_scaled = (moving_crop - np.min(moving_crop))
-        zero_prop = (moving_crop_scaled.size - np.count_nonzero(moving_crop_scaled)) / moving_crop_scaled.size
-
-        del moving_crop_scaled
-        gc.collect()
-
+        nonzero_prop = np.mean(binarize_image(moving_crop))
+        
         # Stop cropping if sufficient non-zero pixels are found
-        if zero_prop <= 0.3:
+        if nonzero_prop >= nonzero_thresh:
             break
 
     return fixed_crop, moving_crop
 
 def affine_registration(input_path, fixed_image_path, current_registered_crops_dir, 
-                        crop_width_x, crop_width_y, overlap_x, overlap_y, crop=True, crop_size=4000, n_features=2000):
+                        crop_width_x, crop_width_y, overlap_x, overlap_y, crop=False, crop_size=4000, n_features=2000):
     """
     Registers moving and fixed images using an affine transformation and saves the registered image.
 
@@ -107,12 +106,8 @@ def affine_registration(input_path, fixed_image_path, current_registered_crops_d
     """
     # Get image shape and determine crop areas
     mov_shape = get_image_file_shape(input_path)
-    print(f"Moving image shape: {mov_shape}")
     fixed_shape = get_image_file_shape(fixed_image_path)
-    print(f"Fixed image shape: {fixed_shape}")
     padding_shape = get_padding_shape(mov_shape, fixed_shape)
-    print("PADDING SHAPE: ", padding_shape)
-    # crop_width_x, crop_width_y, overlap_x, overlap_y = get_cropping_params(padding_shape)
     crop_areas = get_crop_areas(shape=padding_shape, crop_width_x=crop_width_x, crop_width_y=crop_width_y, overlap_x=overlap_x, overlap_y=overlap_y)
 
     # Find a dense region to compute the affine transformation matrix
@@ -200,7 +195,7 @@ if __name__ == '__main__':
                         help='Overlap of each crop along the x-axis.')
     parser.add_argument('--overlap-y', type=int, 
                         help='Overlap of each crop along the y-axis.')
-    parser.add_argument('--crop', action='store_false', 
+    parser.add_argument('--crop', action='store_true', 
                         help='Whether to compute the affine mapping using a smaller subregion of the image.')
     parser.add_argument('--crop-size', type=int, default=4000, 
                         help='Size of the subregion to use for affine mapping (if cropping is enabled).')

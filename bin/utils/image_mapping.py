@@ -30,25 +30,17 @@ def compute_diffeomorphic_mapping_dipy(y: np.ndarray, x: np.ndarray, sigma_diff=
     # Check if both images have the same shape
     if y.shape != x.shape:
         raise ValueError("Reference image (y) and moving image (x) must have the same shape.")
-    
-    # Initialize the AffineRegistration and AffineTransform2D objects
-    #affreg = AffineRegistration()
-    #transform = AffineTransform2D()
-
-    # Perform affine registration
-    #affine = affreg.optimize(y, x, transform, params0=None)
 
     # Define the metric and create the Symmetric Diffeomorphic Registration object
     metric = CCMetric(2, sigma_diff=sigma_diff, radius=radius)
     sdr = SymmetricDiffeomorphicRegistration(metric)
 
     # Perform the diffeomorphic registration using the pre-alignment from affine registration
-    #mapping = sdr.optimize(y, x, prealign=affine.affine)
     mapping = sdr.optimize(y, x)
 
-    return mapping  
+    return mapping
 
-def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray, crop=True, crop_size=4000, n_features=2000):
+def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray, crop=False, crop_size=4000, n_features=2000):
     """
     Compute affine mapping using OpenCV.
     
@@ -68,7 +60,10 @@ def compute_affine_mapping_cv2(y: np.ndarray, x: np.ndarray, crop=True, crop_siz
         mid_x = np.array(x.shape) // 2
         y = cv2.normalize(y[(mid_y[0]-crop_size):(mid_y[0]+crop_size), (mid_y[1]-crop_size):(mid_y[1]+crop_size)], None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
         x = cv2.normalize(x[(mid_x[0]-crop_size):(mid_x[0]+crop_size), (mid_x[1]-crop_size):(mid_x[1]+crop_size)], None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-        
+    
+    y = cv2.normalize(y, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    x = cv2.normalize(x, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
     # Detect ORB keypoints and descriptors
     orb = cv2.ORB_create(fastThreshold=0, edgeThreshold=0, nfeatures=n_features)
 

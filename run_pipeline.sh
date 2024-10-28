@@ -33,13 +33,22 @@
 #     --overlap_y 800 \
 #     --max_workers 1
 
+#nextflow run main.nf \
+#    -with-tower \
+#    --work_dir /hpcnfs/scratch/DIMA/chiodin/tests/image_6k_6k \
+#    --sample_sheet_path  /hpcnfs/scratch/DIMA/chiodin/tests/image_6k_6k/logs/io/sample_sheet.csv \
+#    --crop_width_x 1200 \
+#    --crop_width_y 1200 \
+#    --overlap_x 800 \
+#    --overlap_y 800 \
+#    --max_workers 3
+    
 nextflow run main.nf \
-    -with-tower \
-    --work_dir /hpcnfs/scratch/DIMA/chiodin/tests/image_6k_6k \
-    --sample_sheet_path  /hpcnfs/scratch/DIMA/chiodin/tests/image_6k_6k/logs/io/sample_sheet.csv \
-    --crop_width_x 1200 \
-    --crop_width_y 1200 \
-    --overlap_x 800 \
-    --overlap_y 800 \
-    --max_workers 3
-           
+    --with-tower \
+    --work_dir /hpcnfs/scratch/DIMA/chiodin/tests/run_19S7 \
+    --sample_sheet_path /hpcnfs/scratch/DIMA/chiodin/tests/run_19S7/logs/io/sample_sheet.csv \
+    --crop_width_x 7000 \
+    --crop_width_y 7000 \
+    --overlap_x 3000 \
+    --overlap_y 3000 \
+    --max_workers 10       

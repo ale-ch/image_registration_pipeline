@@ -206,40 +206,6 @@ def load_h5_region(file_path, loading_region):
     with h5py.File(file_path, 'r') as f:
         return f['dataset'][start_col:end_col, start_row:end_row]
 
-# def get_image_file_shape(tiff_path):
-#     """
-#     Get the width and height of a TIFF image without fully loading the image.
-#     
-#     Parameters:
-#         tiff_path (str): Path to the TIFF image.
-#     
-#     Returns:
-#         tuple: (width, height) of the image.
-#     """
-#     with tifffile.TiffFile(tiff_path) as tiff:
-#         image_shape = tiff.pages[0].shape  # (height, width)
-#         width, height = image_shape[1], image_shape[0]  # Extract width and height
-#     return width, height
-# 
-# def get_nd2_image_shape(nd2_path):
-#     """
-#     Get the width and height of the first image in an ND2 file without fully loading the image.
-# 
-#     Parameters:
-#         nd2_path (str): Path to the ND2 image.
-# 
-#     Returns:
-#         tuple: (width, height) of the first image.
-#     """
-#     with nd2.ND2File(nd2_path) as nd2_file:
-#         # Get the dimensions of the first image
-#         first_image_shape = nd2_file.asarray()[0].shape  # (channels, height, width) format
-#         
-#         # Assuming the first image is the one we want, extract height and width
-#         height, width = first_image_shape[1], first_image_shape[2]  # (channels, height, width)
-#         
-#     return width, height
-
 def get_image_file_shape(path, format='.h5'):
     """
     Get the width and height of a TIFF image without fully loading the image.
@@ -270,8 +236,6 @@ def get_image_file_shape(path, format='.h5'):
             width, height = shape[0], shape[1]
         
     return width, height
-
-
 
 def get_padding_shape(shape1, shape2):
     """

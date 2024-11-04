@@ -44,7 +44,7 @@ def remove_file_extension(filename):
             break
     return filename
 
-def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=None, moving_image_path=None, transformation=''):
+def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=None, moving_image_path=None, transformation='', makedirs=True):
     """
     Create directories for storing mappings and registered crops based on the moving image path.
 
@@ -65,8 +65,9 @@ def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=Non
     if root_mappings_dir is not None:
         current_mappings_dir = os.path.join(root_mappings_dir, image_dirname, filename)
 
-        # Create the mappings directory if it does not exist
-        os.makedirs(current_mappings_dir, exist_ok=True)
+        if makedirs:
+            # Create the mappings directory if it does not exist
+            os.makedirs(current_mappings_dir, exist_ok=True)
     else: 
         current_mappings_dir = None
 
@@ -75,9 +76,9 @@ def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=Non
 
         current_registered_crops_dir = os.path.join(root_registered_crops_dir, transformation, image_dirname, filename)
         current_registered_crops_no_overlap_dir = os.path.join(root_registered_crops_dir, transformation, 'no_overlap', image_dirname, filename)
-
-        os.makedirs(current_registered_crops_dir, exist_ok=True)
-        os.makedirs(current_registered_crops_no_overlap_dir, exist_ok=True)
+        if makedirs:
+            os.makedirs(current_registered_crops_dir, exist_ok=True)
+            os.makedirs(current_registered_crops_no_overlap_dir, exist_ok=True)
     else:
         current_registered_crops_dir = None
         current_registered_crops_no_overlap_dir = None

@@ -5,10 +5,10 @@ import numpy as np
 import logging
 import re
 import gc
-from utils import logging_config
+from .. import logging_config
+from ..io_tools import load_pickle, save_pickle
+from ..image_mapping import compute_diffeomorphic_mapping_dipy
 from concurrent.futures import ProcessPoolExecutor
-from utils.io_tools import load_pickle, save_pickle
-from utils.image_mapping import compute_diffeomorphic_mapping_dipy
 
 # Setup logging configuration
 logging_config.setup_logging()
@@ -56,6 +56,9 @@ def process_crop(fixed_file, moving_file, current_crops_dir_fixed, current_crops
         # Save the computed mapping to a checkpoint
         save_pickle(mapping_diffeomorphic, checkpoint_path)
         logger.info(f"Saved checkpoint for i={idx}")
+
+        del mapping_diffeomorphic
+        gc.collect()
 
 def compute_mappings(fixed_files, moving_files, current_crops_dir_fixed, current_crops_dir_moving, checkpoint_dir, max_workers=None):
     """

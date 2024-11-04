@@ -8,7 +8,6 @@ from utils.image_cropping import get_padding_shape
 from utils.image_cropping import remove_crops_overlap
 from utils.image_stitching import stitch_crops
 from utils.misc import create_checkpoint_dirs
-from utils.misc import empty_folder
 from utils import logging_config
 from utils.io_tools import save_h5
 
@@ -50,7 +49,7 @@ def main(args):
     dirname = os.path.basename(os.path.dirname(input_path)) # Name of the parent directory to output file
     file_output_dir = os.path.join(args.output_dir, args.transformation, dirname) # Path to parent directory of the output file
     output_path = os.path.join(file_output_dir, filename) # Path to output file
-    
+        
     if not os.path.exists(output_path):
         # Create checkpoint directories
         _, current_registered_crops_dir, current_registered_crops_no_overlap_dir = create_checkpoint_dirs(

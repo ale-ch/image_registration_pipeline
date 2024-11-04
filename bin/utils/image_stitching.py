@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import numpy as np
-from utils.io_tools import load_pickle
-from utils.misc import get_indexed_filepaths
+from .io_tools import load_pickle
+from .misc import get_indexed_filepaths
 from concurrent.futures import ProcessPoolExecutor
 
 def stitch_rectangle(stitched_image: np.array, rectangle: np.array, position: tuple):

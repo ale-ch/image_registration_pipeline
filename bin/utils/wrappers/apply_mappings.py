@@ -4,8 +4,8 @@ import os
 import numpy as np
 import re
 import gc
-from utils.io_tools import save_pickle, load_pickle
-from utils.image_mapping import apply_mapping
+from ..io_tools import save_pickle, load_pickle
+from ..image_mapping import apply_mapping
 from concurrent.futures import ProcessPoolExecutor
 
 def process_crop(mapping_file, moving_file, checkpoint_dir=None):
@@ -25,23 +25,18 @@ def process_crop(mapping_file, moving_file, checkpoint_dir=None):
         moving_crop = load_pickle(moving_file)
         mapping = load_pickle(mapping_file)
 
-        mov_crop = moving_crop[1]  # Extract the specific channel of the moving crop
-        mov_crop_idx = moving_crop[0]  # Get the index of the crop
-
         # Check for single valued array (such as white border)
-        if not len(np.unique(mov_crop)) == 1:
+        if not len(np.unique(moving_crop[1])) == 1:
         # Apply mappings
-            mapped_image_indexed = (mov_crop_idx, apply_mapping(mapping, mov_crop, method='dipy'))
+            save_pickle((moving_crop[0], apply_mapping(mapping, moving_crop[1], method='dipy')), checkpoint_path)
         else:
         # Return crop as is
-            mapped_image_indexed = (mov_crop_idx, mov_crop)
+            save_pickle(moving_crop[0], moving_crop[1])
+
+        print(f"Saved checkpoint for i={moving_crop[0]}")
         
         del moving_crop, mapping
-        gc.collect()
-
-        # Save checkpoint
-        save_pickle(mapped_image_indexed, checkpoint_path)
-        print(f"Saved checkpoint for i={mov_crop_idx}")
+        gc.collect()        
 
 
 def apply_mappings(mapping_files, moving_files, checkpoint_dir, max_workers=None):

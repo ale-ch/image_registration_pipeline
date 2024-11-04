@@ -3,8 +3,8 @@
 */
 
 process convert_to_h5 {
-    memory "1G"
-    cpus 1
+    cpus 10
+    memory "100G"
     publishDir "${params.input_dir}", mode: "copy"
     // container "docker://yinxiu/bftools:latest"
     tag "conversion_h5"

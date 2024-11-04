@@ -6,6 +6,9 @@ import logging
 from utils import logging_config
 from utils.image_cropping import crop_image_channels
 from utils.misc import create_checkpoint_dirs, get_crops_dir
+from utils.image_cropping import get_image_file_shape
+from utils.image_cropping import get_crop_areas
+from utils.image_cropping import get_padding_shape
 from utils.wrappers.compute_mappings import compute_mappings
 from utils.wrappers.apply_mappings import apply_mappings
 
@@ -57,7 +60,28 @@ def main(args):
     input_path = os.path.join(args.output_dir, 'affine', dirname, filename) # Path to input file
     output_path = os.path.join(args.output_dir, 'diffeomorphic', dirname, filename) # Path to output file
 
-    if not os.path.exists(output_path):
+    # Get image shape and determine crop areas
+    mov_shape = get_image_file_shape(input_path)
+    fixed_shape = get_image_file_shape(fixed_image_path)
+    padding_shape = get_padding_shape(mov_shape, fixed_shape)
+    crop_areas = get_crop_areas(
+        shape=padding_shape, 
+        crop_width_x=args.crop_width_x, crop_width_y=args.crop_width_y, 
+        overlap_x=args.overlap_x, overlap_y=args.overlap_y
+    )
+
+    # Get checkpoint directories
+    current_mappings_dir, current_registered_crops_dir, _ = create_checkpoint_dirs(
+            root_mappings_dir=args.mappings_dir, 
+            root_registered_crops_dir=args.registered_crops_dir, 
+            moving_image_path=input_path,
+            transformation='diffeomorphic'
+    )
+
+    n_registered_crops = len(os.listdir(current_registered_crops_dir))
+    n_mappings = len(os.listdir(current_mappings_dir))
+
+    if not os.path.exists(output_path) or n_registered_crops != n_mappings:
         # Check if output image directory exists, create it if not
         output_dir_path = os.path.dirname(output_path)
         if not os.path.exists(output_dir_path):
@@ -67,13 +91,6 @@ def main(args):
         # Create intermediate directories for crops and mappings
         current_crops_dir_fixed = get_crops_dir(fixed_image_path, args.crops_dir_fixed)
         current_crops_dir_moving = get_crops_dir(input_path, args.crops_dir_moving)
-
-        current_mappings_dir, current_registered_crops_dir, _ = create_checkpoint_dirs(
-            root_mappings_dir=args.mappings_dir, 
-            root_registered_crops_dir=args.registered_crops_dir, 
-            moving_image_path=input_path,
-            transformation='diffeomorphic'
-        )
 
         # Crop images and save them to the crops directories
         crop_image_channels(input_path, fixed_image_path, current_crops_dir_fixed, 

@@ -52,3 +52,5 @@ nextflow run main.nf \
     --overlap_x 3000 \
     --overlap_y 3000 \
     --max_workers 10       
+
+  

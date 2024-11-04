@@ -13,8 +13,8 @@ include { convert_to_h5 } from './modules/local/image_conversion/main.nf'
 include { convert_to_ome_tiff } from './modules/local/image_conversion/main.nf'
 include { affine_registration } from './modules/local/image_registration/main.nf' 
 include { diffeomorphic_registration } from './modules/local/image_registration/main.nf'
-include { export_image as export_image_1 } from './modules/local/export_image/main.nf'
-include { export_image as export_image_2 } from './modules/local/export_image/main.nf'
+include { export_image_1 } from './modules/local/export_image/main.nf'
+include { export_image_2 } from './modules/local/export_image/main.nf'
 
 workflow {
 
@@ -38,7 +38,7 @@ workflow {
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        CONVERSION TO H5
+        CONVERSION TO h5
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
@@ -51,7 +51,7 @@ workflow {
     */
 
     affine_registration(convert_to_h5.out)
-    export_image_1(affine_registration.out ) 
+    export_image_1(affine_registration.out) 
     diffeomorphic_registration(export_image_1.out)
     export_image_2(diffeomorphic_registration.out)
 

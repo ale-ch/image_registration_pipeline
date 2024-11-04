@@ -161,15 +161,36 @@ def main(args):
     dirname = os.path.basename(os.path.dirname(input_path)) # Name of the parent directory to output file
     file_output_dir = os.path.join(args.output_dir, 'affine', dirname) # Path to parent directory of the output file
     output_path = os.path.join(file_output_dir, filename) # Path to output output file
+
+    # Get image shape and determine crop areas
+    mov_shape = get_image_file_shape(input_path)
+    fixed_shape = get_image_file_shape(fixed_image_path)
+    padding_shape = get_padding_shape(mov_shape, fixed_shape)
+    crop_areas = get_crop_areas(
+        shape=padding_shape, 
+        crop_width_x=args.crop_width_x, crop_width_y=args.crop_width_y, 
+        overlap_x=args.overlap_x, overlap_y=args.overlap_y
+    )
+
+    # Get checkpoint directories
+    _, current_registered_crops_dir, _ = create_checkpoint_dirs(
+        root_registered_crops_dir=args.registered_crops_dir, 
+        moving_image_path=input_path,
+        transformation='affine',
+        makedirs=False
+    )
+
+    n_registered_crops = len(os.listdir(current_registered_crops_dir))
+    n_crops = len(crop_areas[0])
     
-    if not os.path.exists(output_path):
-        # Create checkpoint directories
-        _, current_registered_crops_dir, current_registered_crops_no_overlap_dir = create_checkpoint_dirs(
+    if not os.path.exists(output_path) or n_registered_crops != n_crops:
+        # Get checkpoint directories
+        _, current_registered_crops_dir, _ = create_checkpoint_dirs(
             root_registered_crops_dir=args.registered_crops_dir, 
             moving_image_path=input_path,
             transformation='affine'
         )
-    
+
         # Perform affine registration
         affine_registration(input_path, fixed_image_path, current_registered_crops_dir, 
                             args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y,

@@ -10,7 +10,6 @@ from utils.image_stitching import stitch_crops
 from utils.misc import create_checkpoint_dirs
 from utils import logging_config
 from utils.io import save_h5
-from utils.misc import get_indexed_filepaths
 
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
@@ -28,18 +27,11 @@ def export_image(input_path, output_dir, fixed_image_path, overlap_x, overlap_y,
     mov_shape = get_image_file_shape(input_path)  # Shape of moving image
     fixed_shape = get_image_file_shape(fixed_image_path)  # Shape of fixed image
     shape = get_padding_shape(mov_shape, fixed_shape)  # Calculate padding shape
-
     # Remove overlap from crops
-    crops_paths = get_indexed_filepaths(registered_crops_dir)
-    positions = remove_crops_overlap(crops_paths, registered_crops_no_overlap_dir, overlap_x, overlap_y, max_workers)
-
+    positions = remove_crops_overlap(registered_crops_dir, registered_crops_no_overlap_dir, 
+                                    overlap_x, overlap_y, max_workers)
     # Stitch crops and export image
-    crops_no_overlap_paths = get_indexed_filepaths(registered_crops_no_overlap_dir)
-
-    print('CROPS PATHS: ', [(path[0], os.path.basename(path[1])) for path in crops_no_overlap_paths])
-    print('POSITIONS: ', positions)
-
-    stitched_image = stitch_crops(crops_no_overlap_paths, shape, positions, max_workers)
+    stitched_image = stitch_crops(registered_crops_no_overlap_dir, shape, positions, max_workers)
     save_h5(stitched_image, output_path)
     logger.info(f'Image {input_path} processed successfully.')
 
@@ -96,4 +88,3 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     main(args)
-

@@ -25,8 +25,9 @@ def process_crop(mapping_file, moving_file, checkpoint_dir=None):
         moving_file (list): Path to moving crop file.
         checkpoint_dir (str): Directory to save/load checkpoint files.
     """
-    match = re.search(r'\d+_\d+_\d+', moving_file)
-    idx = match.group(0) # Get the first two indices
+    pattern = re.compile(r'(\d+_\d+_\d+)\.pkl$')
+    match = pattern.search(mapping_file)
+    idx = "_".join(match.group(0).split('_')[:-1]) # Get the first two indices
 
     checkpoint_path = os.path.join(checkpoint_dir, f'registered_split_{idx}.pkl')
     if not os.path.exists(checkpoint_path):

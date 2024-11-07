@@ -14,14 +14,18 @@ from utils.misc import get_crops_dir
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
-def stack_dapi_crops(input_path, current_crops_dir_fixed, current_crops_dir_moving):
-        """
-        Performs diffeomorphic registration between fixed and moving image crops.
+def stack_dapi_crops(input_path, fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving):
+    """
+    Performs diffeomorphic registration between fixed and moving image crops.
 
-        Args:
-            current_crops_dir_fixed (str): Directory containing fixed image crops.
-            current_crops_dir_moving (str): Directory containing moving image crops.
-        """
+    Args:
+        current_crops_dir_fixed (str): Directory containing fixed image crops.
+        current_crops_dir_moving (str): Directory containing moving image crops.
+    """
+    whole_slide_id_moving = os.path.basename(input_path).split('.')[0]
+    whole_slide_id_fixed = os.path.basename(fixed_image_path).split('.')[0]
+
+    if whole_slide_id_fixed != whole_slide_id_moving:
         # List of files in each directory
         fixed_files = sorted([os.path.join(current_crops_dir_fixed, file) for file in os.listdir(current_crops_dir_fixed)])
         moving_files = sorted([os.path.join(current_crops_dir_moving, file) for file in os.listdir(current_crops_dir_moving)])
@@ -30,8 +34,6 @@ def stack_dapi_crops(input_path, current_crops_dir_fixed, current_crops_dir_movi
         fixed_files_dapi = [f for f in fixed_files if f.endswith('_2.pkl')]    
         moving_files_dapi = [f for f in moving_files if f.endswith('_2.pkl')]
 
-        whole_slide_id = os.path.basename(input_path).split('.')[0]
-
         for fixed_file, moving_file in zip(fixed_files_dapi, moving_files_dapi):
             fixed = load_pickle(fixed_file)
             moving = load_pickle(moving_file)
@@ -39,12 +41,12 @@ def stack_dapi_crops(input_path, current_crops_dir_fixed, current_crops_dir_movi
             idx, fixed = fixed[0], fixed[1]
             _, moving = moving[0], moving[1]
 
-            crop_id = f'{whole_slide_id}_{idx[0]}_{idx[1]}_{idx[2]}'
-
-            save_pickle((idx, fixed, moving), f"{crop_id}.pkl")
-
+            save_pickle((idx, fixed, moving), f"{whole_slide_id_moving}_{idx[0]}_{idx[1]}_{idx[2]}.pkl")
+            
             del fixed, moving
             gc.collect()
+    else:
+        save_pickle(0, f"{whole_slide_id_fixed}.pkl")
 
 def main(args):
     # Set up logging to a file
@@ -54,21 +56,23 @@ def main(args):
     logger.addHandler(handler)
 
     input_path = args.input_path.replace('.nd2', '.h5')
-    fixed_image_path = args.fixed_image_path.replace('.nd2', '.h5')
 
     filename = os.path.basename(input_path) # Name of the output file 
     dirname = os.path.basename(os.path.dirname(input_path)) # Name of the parent directory to output file
     input_path = os.path.join(args.output_dir, 'affine', dirname, filename) # Path to input file
 
+    fixed_image_path = args.fixed_image_path.replace('.nd2', '.h5')
+
     # Create intermediate directories for crops
     current_crops_dir_fixed = get_crops_dir(fixed_image_path, args.crops_dir_fixed)
     current_crops_dir_moving = get_crops_dir(input_path, args.crops_dir_moving)
 
-    # Crop images and save them to the crops directories
-    crop_image_channels(input_path, fixed_image_path, current_crops_dir_fixed, 
-                args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y, which_crop='fixed')
+    if args.input_path != args.fixed_image_path:
+        # Crop images and save them to the crops directories
+        crop_image_channels(input_path, fixed_image_path, current_crops_dir_fixed, 
+                    args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y, which_crop='fixed')
 
-    stack_dapi_crops(input_path, current_crops_dir_fixed, current_crops_dir_moving)
+    stack_dapi_crops(input_path, fixed_image_path, current_crops_dir_fixed, current_crops_dir_moving)
 
 if __name__ == "__main__":
     # Set up argument parser for command-line usage

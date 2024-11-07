@@ -15,6 +15,19 @@ from utils.image_mapping import compute_diffeomorphic_mapping_dipy
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
+def get_index_from_str(input_str):
+    # Define the pattern to match
+    pattern = r'\d+_\d+_\d+'
+    
+    # Find all the matches
+    matches = re.findall(pattern, input_str)
+    
+    # If there are matches, return the last one
+    if matches:
+        return matches[-1]
+    else:
+        return None
+
 def compute_mappings(crops_file, checkpoint_dir):
     """
     Loads a pair of fixed and moving crops from their respective directories,
@@ -27,11 +40,14 @@ def compute_mappings(crops_file, checkpoint_dir):
     Returns:
         mapping_diffeomorphic: The computed or loaded diffeomorphic mapping, or None if shapes do not match.
     """
-    match = re.search(r'\d+_\d+_\d+', crops_file)
+    pattern = re.compile(r'(\d+_\d+_\d+)\.pkl$')
+    match = pattern.search(crops_file)
     idx = "_".join(match.group(0).split('_')[:-1]) # Get the first two indices
 
     # Construct the checkpoint path for storing/loading mappings
+    # checkpoint_path = f'mapping_{idx}.pkl'
     checkpoint_path = os.path.join(checkpoint_dir, f'mapping_{idx}.pkl')
+
     if not os.path.exists(checkpoint_path):
         crops = load_pickle(crops_file)
         idx, fixed_crop, moving_crop = crops[0], crops[1], crops[2]

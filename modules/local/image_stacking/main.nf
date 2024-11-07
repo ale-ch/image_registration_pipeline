@@ -27,19 +27,17 @@ process stack_dapi_crops {
     
     script:
     """
-    if [ "${input_path}" != "${fixed_image_path}" ]; then
-        stack_dapi_crops.py \
-                --input-path "${input_path}" \
-                --output-dir "${params.output_dir_reg}" \
-                --fixed-image-path "${fixed_image_path}" \
-                --crops-dir-fixed "${params.crops_dir_fixed}" \
-                --crops-dir-moving "${params.crops_dir_moving}" \
-                --crop-width-x "${params.crop_width_x}" \
-                --crop-width-y "${params.crop_width_y}" \
-                --overlap-x "${params.overlap_x}" \
-                --overlap-y "${params.overlap_y}" \
-                --logs-dir "${params.logs_dir}" 
-    fi
+    stack_dapi_crops.py \
+            --input-path "${input_path}" \
+            --output-dir "${params.output_dir_reg}" \
+            --fixed-image-path "${fixed_image_path}" \
+            --crops-dir-fixed "${params.crops_dir_fixed}" \
+            --crops-dir-moving "${params.crops_dir_moving}" \
+            --crop-width-x "${params.crop_width_x}" \
+            --crop-width-y "${params.crop_width_y}" \
+            --overlap-x "${params.overlap_x}" \
+            --overlap-y "${params.overlap_y}" \
+            --logs-dir "${params.logs_dir}" 
     """
 }
 

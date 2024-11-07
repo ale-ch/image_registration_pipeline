@@ -3,7 +3,7 @@
 */
 
 process convert_to_h5 {
-    cpus 10
+    cpus 20
     memory "100G"
     publishDir "${params.input_dir}", mode: "copy"
     // container "docker://yinxiu/bftools:latest"
@@ -11,12 +11,14 @@ process convert_to_h5 {
 
     input:
     tuple val(patient_id),
+        val(cycle_id),
         val(fixed_image_path),
         val(input_path),
         val(output_path)
     
     output:
     tuple val(patient_id),
+        val(cycle_id),
         val(fixed_image_path),
         val(input_path),
         val(output_path)
@@ -39,6 +41,7 @@ process convert_to_ome_tiff {
 
     input:
     tuple val(patient_id),
+        val(cycle_id),
         val(fixed_image_path),
         val(input_path),
         val(output_path)

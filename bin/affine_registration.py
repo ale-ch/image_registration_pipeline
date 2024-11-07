@@ -13,10 +13,8 @@ from utils.image_cropping import get_padding_shape
 from utils.image_cropping import zero_pad_array
 from utils.image_cropping import crop_2d_array
 from utils.image_cropping import get_crop_areas
-from utils.image_mapping import compute_affine_mapping_cv2
-from utils.wrappers.apply_mappings import apply_mapping
-from utils.io_tools import save_pickle, load_nd2, load_h5
-
+from utils.image_mapping import compute_affine_mapping_cv2, apply_mapping
+from utils.io import save_pickle, load_h5
 
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
@@ -120,34 +118,41 @@ def affine_registration(input_path, fixed_image_path, current_registered_crops_d
     del moving_crop
     gc.collect()
 
-    # Load and pad the moving image
-    logger.debug(f"Loading moving image {input_path}")
-    moving_image = load_h5(input_path)
+    whole_slide_id = os.path.basename(input_path).split('.')[0]
+
     # Apply the affine transformation to each crop and channel
     n_channels = 3
     for ch in range(n_channels):
         for idx, area in zip(crop_areas[0], crop_areas[1]):
-            checkpoint_filename = os.path.join(current_registered_crops_dir, f'affine_split_{idx[0]}_{idx[1]}_{ch}.pkl')
+            checkpoint_filename = os.path.join(current_registered_crops_dir, f'{whole_slide_id}_{idx[0]}_{idx[1]}_{ch}.pkl')
             if not os.path.exists(checkpoint_filename):
+                # Load moving image channel
+                logger.debug(f"Loading moving image {input_path}")
+                moving_image = load_h5(input_path, channels_to_load=[ch])
+
+                # Pad and crop moving image
                 crop = crop_2d_array(
                     array=zero_pad_array(
-                        array=np.squeeze(moving_image[:, :, ch]), 
+                        array=np.squeeze(moving_image), 
                         target_shape=padding_shape
                     ),
                     crop_areas=area
                 )
 
-                logger.info(f'Applying transformation to moving crops.')
+                del moving_image
+                gc.collect()
+
+                # Apply affine transformation to moving crop
+                logger.info(f'Applying affine transformation to crop ({idx[0]}, {idx[1]}, {ch}).')
                 crop = ((idx) + (ch,), apply_mapping(matrix, crop, 'cv2'))
                 logger.info(f'Transformation applied successfully.')
 
                 # Save the transformed crop
                 save_pickle(crop, checkpoint_filename)
 
-    del moving_image, crop
-    gc.collect()
-
-
+                del crop
+                gc.collect()
+        
 def main(args):
     handler = logging.FileHandler(os.path.join(args.logs_dir, 'image_registration.log'))
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -180,8 +185,11 @@ def main(args):
         makedirs=False
     )
 
-    n_registered_crops = len(os.listdir(current_registered_crops_dir))
-    n_crops = len(crop_areas[0])
+    if os.path.exists(current_registered_crops_dir):
+        n_registered_crops = len(os.listdir(current_registered_crops_dir))
+        n_crops = len(crop_areas[0])
+    else:
+        n_registered_crops = 0
     
     if not os.path.exists(output_path) or n_registered_crops != n_crops:
         # Get checkpoint directories
@@ -196,7 +204,6 @@ def main(args):
                             args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y,
                             args.crop, args.crop_size, args.n_features)
         
-
 if __name__ == '__main__':
     # Set up argument parser for command-line usage
     parser = argparse.ArgumentParser(description="Register images from input paths and save them to output paths.")

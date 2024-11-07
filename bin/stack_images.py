@@ -32,16 +32,6 @@ def extract_date_from_path(path):
         return datetime.strptime(match.group(), '%Y.%m.%d')  # Convert to datetime
     return None
 
-def load_h5_channels(path, channels_to_load):
-    # Open the HDF5 file
-    with h5py.File(path, 'r') as f:
-        # Access the dataset
-        dataset = f['dataset']
-        # Use slicing to load only the specific channels
-        data = dataset[:, :, channels_to_load]
-    
-        return data
-
 def stack_channel(file_path, new_channel_data):
     """
     Append a new channel to an existing dataset in an HDF5 file without loading the entire dataset into memory.
@@ -89,7 +79,7 @@ def main(args):
     for file in sorted_files:
         for ch in range(n_channels):
             # Load individual channel and transpose it
-            new_channel = np.transpose(np.squeeze(load_h5_channels(file, [ch])), (2, 0, 1)) 
+            new_channel = np.transpose(np.squeeze(load_h5(file, [ch])), (2, 0, 1)) 
             log_file_size(output_path)
 
             # Stack channel to fixed image

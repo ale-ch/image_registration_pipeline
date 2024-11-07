@@ -6,9 +6,10 @@ def parse_csv(csv_file_path) {
         .map { row ->
             return [
                 patient_id          : row.patient_id,           // Patient identifier
+                cycle_id            : row.cycle_id,             // Staining cycle identifier
                 fixed_image_path    : row.fixed_image_path,     // Path to fixed image used in registration
-                input_path          : row.input_path,       // Input path for registration
-                output_path         : row.output_path     // Output path for conversion
+                input_path          : row.input_path,           // Input path for registration
+                output_path         : row.output_path           // Output path for conversion
             ]
         }
 }
@@ -17,7 +18,7 @@ def parse_csv(csv_file_path) {
 def get_diffeomorphic_registration_params() {
     return Channel.of(
         tuple(
-            params.crops_dir,             // Directory for storing image crops
+            params.crops_dir,            // Directory for storing image crops
             params.mappings_dir,         // Directory for storing mappings
             params.registered_crops_dir, // Directory for storing registered crops
             params.crop_width_x,         // Crop width in x-direction

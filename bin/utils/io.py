@@ -30,12 +30,25 @@ def save_h5(data, path):
     with h5py.File(path, 'w') as hdf5_file:
         hdf5_file.create_dataset('dataset', data=data)
         
-def load_h5(path):
+def load_h5(path, channels_to_load=None):
     # Read the NumPy array from the HDF5 file
     with h5py.File(path, 'r') as hdf5_file:
-        loaded_array = hdf5_file['dataset'][:]
+        data = hdf5_file['dataset'][:]
 
-    return loaded_array
+        if channels_to_load is not None:
+            data = data[:, :, channels_to_load]
+
+    return data
+
+def load_h5_channels(path, channels_to_load):
+    # Open the HDF5 file
+    with h5py.File(path, 'r') as f:
+        # Access the dataset
+        dataset = f['dataset']
+        # Use slicing to load only the specific channels
+        data = dataset[:, :, channels_to_load]
+    
+        return data
 
 """
 nd2

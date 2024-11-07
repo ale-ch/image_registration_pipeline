@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from utils.io_tools import load_nd2, save_h5
+from utils.io import load_nd2, save_h5
 from utils.image_cropping import crop_2d_array
 
 def convert_to_h5(src, dst, input_ext='.nd2'):

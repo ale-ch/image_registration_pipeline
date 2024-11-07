@@ -26,18 +26,18 @@ def process_files(work_dir, input_dir=None, output_dir=None, output_csv="output.
     for root, dirs, files in os.walk(input_dir):
         for file in files:
             if file.endswith('.nd2') or file.endswith('.h5'):  # Process .nd2 or .h5 files
-                patient_id = file.split('_')[0]
+                splitted_file = file.split('_')
+
+                patient_id = splitted_file[0]
+                cycle_id = f'{splitted_file[1]}_{splitted_file[2]}_{splitted_file[3]}'.split('.')[0]
                 input_path = os.path.join(root, file)
-                
-                # Extract the date from the input path
-                date = extract_date_from_path(input_path)
-                
-                # Define expected paths based on the directory structure
-                # output_path = os.path.join(work_dir, 'data/output/image_conversion', input_path.replace(input_dir, '').lstrip('/').replace('.nd2', '.ome.tiff'))
-                output_path = os.path.join(work_dir, 'data/output/image_conversion', re.sub(r'\.(nd2|h5)$', '.ome.tiff', input_path.replace(input_dir, '').lstrip('/')))           
+                output_path = os.path.join(work_dir, 'data/output/image_conversion', f'{patient_id}.ome.tiff') 
+                date = extract_date_from_path(input_path) 
+
                 # Store data with date
                 patient_data[patient_id].append({
                     'patient_id': patient_id,
+                    'cycle_id': cycle_id,
                     'input_path': input_path,
                     'output_path': output_path,
                     'date': date  # Keep date in the dictionary for processing
@@ -60,7 +60,7 @@ def process_files(work_dir, input_dir=None, output_dir=None, output_csv="output.
 
     # Step 3: Write the results to a CSV file
     with open(output_csv, mode='w', newline='') as csvfile:
-        fieldnames = ['patient_id', 'fixed_image_path', 'input_path','output_path']
+        fieldnames = ['patient_id', 'cycle_id', 'fixed_image_path', 'input_path','output_path']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)  # 'rows' now has no 'date' field

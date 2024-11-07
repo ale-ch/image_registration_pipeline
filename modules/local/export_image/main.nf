@@ -1,7 +1,7 @@
 process export_image_1 {
     // cpus 5
     // memory "5G"
-    cpus 10
+    cpus 20
     memory "100G"
     // errorStrategy 'retry'
     // maxRetries = 1
@@ -12,12 +12,14 @@ process export_image_1 {
 
     input:
     tuple val(patient_id),
+        val(cycle_id),
         val(fixed_image_path),
         val(input_path),
         val(output_path)
 
     output:
     tuple val(patient_id),
+        val(cycle_id),
         val(fixed_image_path),
         val(input_path),
         val(output_path)
@@ -43,7 +45,7 @@ process export_image_1 {
 process export_image_2 {
     // cpus 5
     // memory "5G"
-    cpus 10
+    cpus 20
     memory "100G"
     // errorStrategy 'retry'
     // maxRetries = 1
@@ -54,12 +56,14 @@ process export_image_2 {
 
     input:
     tuple val(patient_id),
+        val(cycle_id),
         val(fixed_image_path),
         val(input_path),
         val(output_path)
 
     output:
     tuple val(patient_id),
+        val(cycle_id),
         val(fixed_image_path),
         val(input_path),
         val(output_path)

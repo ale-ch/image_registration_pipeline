@@ -20,13 +20,23 @@ def empty_folder(folder_path):
             shutil.rmtree(item_path)  # Remove directory and its contents
 
 def get_indexed_filepaths(registered_crops_dir):
-    crops_filenames = os.listdir(registered_crops_dir)
-    crops_paths = sorted([os.path.join(registered_crops_dir, file) for file in crops_filenames])
-    indices = sorted([tuple(map(int, re.search(r'\d+_\d+_\d+', filename).group(0).split('_'))) for filename in crops_filenames])
+    # List all filenames in the directory
+    filenames = os.listdir(registered_crops_dir)
     
-    crops_paths = [(idx, path) for idx, path in zip(indices, crops_paths)]
-
-    return crops_paths
+    # Create full paths and extract the correct (id1, id2, id3) from the end of each filename
+    paths = sorted([os.path.join(registered_crops_dir, file) for file in filenames])
+    indices = [
+        tuple(map(int, re.search(r'(\d+)_(\d+)_(\d+)(?=\.pkl$)', filename).groups()))
+        for filename in filenames
+    ]
+    
+    # Pair each index with its corresponding file path
+    indexed_paths = [(idx, path) for idx, path in zip(indices, paths)]
+    
+    # Sort based on the third, first, and second elements of each index tuple
+    sorted_paths = sorted(indexed_paths, key=lambda x: (x[0][2], x[0][0], x[0][1]))
+    
+    return sorted_paths
 
 def remove_file_extension(filename):
     """
@@ -104,3 +114,12 @@ def get_crops_dir(image_path, crops_dir):
     crops_wd = os.path.join(crops_dir, cycle_dir, filename_dir)
 
     return crops_wd
+
+def make_io_paths(input_path, output_dir):
+    input_path = input_path.replace('.nd2', '.h5')
+    filename = os.path.basename(input_path) # Name of the output file 
+    dirname = os.path.basename(os.path.dirname(input_path)) # Name of the parent directory to output file
+    input_path = os.path.join(output_dir, 'affine', dirname, filename) # Path to input file
+    output_path = os.path.join(output_dir, 'diffeomorphic', dirname, filename) # Path to output file
+
+    return input_path, output_path

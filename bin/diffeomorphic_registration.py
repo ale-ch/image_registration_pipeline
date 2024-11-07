@@ -3,47 +3,64 @@
 import argparse
 import os 
 import logging
+import numpy as np
+import re
+import gc
 from utils import logging_config
-from utils.image_cropping import crop_image_channels
-from utils.misc import create_checkpoint_dirs, get_crops_dir
-from utils.image_cropping import get_image_file_shape
-from utils.image_cropping import get_crop_areas
-from utils.image_cropping import get_padding_shape
-from utils.wrappers.compute_mappings import compute_mappings
-from utils.wrappers.apply_mappings import apply_mappings
+from utils.misc import create_checkpoint_dirs, make_io_paths
+from utils.io import load_pickle, save_pickle
+from utils.image_mapping import compute_diffeomorphic_mapping_dipy
 
 # Set up logging configuration
 logging_config.setup_logging()
 logger = logging.getLogger(__name__)
 
-def diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving, 
-                               current_mappings_dir, current_registered_crops_dir, max_workers):
+def compute_mappings(crops_file, checkpoint_dir):
     """
-    Performs diffeomorphic registration between fixed and moving image crops.
+    Loads a pair of fixed and moving crops from their respective directories,
+    computes the diffeomorphic mapping if not already cached, and returns the mapping.
 
     Args:
-        current_crops_dir_fixed (str): Directory containing fixed image crops.
-        current_crops_dir_moving (str): Directory containing moving image crops.
-        current_mappings_dir (str): Directory to save computed mappings.
-        current_registered_crops_dir (str): Directory to save registered crops.
-        max_workers (int): Maximum number of workers for parallel processing.
+        crops_file (str): Filename of the pickle file containing the the tuple (index, fixed crop, moving crop).
+        checkpoint_dir (str): Directory to save/load checkpoint files.
+
+    Returns:
+        mapping_diffeomorphic: The computed or loaded diffeomorphic mapping, or None if shapes do not match.
     """
-    # List of files in each directory
-    fixed_files = sorted([os.path.join(current_crops_dir_fixed, file) for file in os.listdir(current_crops_dir_fixed)])
-    moving_files = sorted([os.path.join(current_crops_dir_moving, file) for file in os.listdir(current_crops_dir_moving)])
+    match = re.search(r'\d+_\d+_\d+', crops_file)
+    idx = "_".join(match.group(0).split('_')[:-1]) # Get the first two indices
 
-    # Filter the files that end with '2.pkl'
-    fixed_files_dapi = [f for f in fixed_files if f.endswith('_2.pkl')]    
-    moving_files_dapi = [f for f in moving_files if f.endswith('_2.pkl')]  
+    # Construct the checkpoint path for storing/loading mappings
+    checkpoint_path = os.path.join(checkpoint_dir, f'mapping_{idx}.pkl')
+    if not os.path.exists(checkpoint_path):
+        crops = load_pickle(crops_file)
+        idx, fixed_crop, moving_crop = crops[0], crops[1], crops[2]
+
+        del crops
+        gc.collect()
+
+        # Check for shape mismatch
+        if fixed_crop[1].shape != moving_crop[1].shape:
+            logger.error(f"Shape mismatch for crops at indices {idx}.")
+            return None
+
+        # Check for single valued crops (white areas)
+        if len(np.unique(fixed_crop)) == 1 or len(np.unique(moving_crop)) == 1:
+            mapping_diffeomorphic = 0
+        else:
+            # Compute the diffeomorphic mapping
+            mapping_diffeomorphic = compute_diffeomorphic_mapping_dipy(fixed_crop, moving_crop)
+        
+        del fixed_crop, moving_crop
+        gc.collect()
+        
+        # Save the computed mapping to a checkpoint
+        save_pickle(mapping_diffeomorphic, checkpoint_path)
+        logger.info(f"Saved checkpoint for i={idx}")
+
+        del mapping_diffeomorphic
+        gc.collect()
     
-    # Compute mappings for all crop pairs
-    compute_mappings(fixed_files_dapi, moving_files_dapi, current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, max_workers)
-
-    n_channels = 3
-    mapping_files = sorted([os.path.join(current_mappings_dir, file) for file in os.listdir(current_mappings_dir)] * n_channels)
-    apply_mappings(mapping_files, moving_files, current_registered_crops_dir, max_workers)
-
-
 def main(args):
     # Set up logging to a file
     handler = logging.FileHandler(os.path.join(args.logs_dir, 'image_registration.log'))
@@ -51,24 +68,7 @@ def main(args):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    input_path = args.input_path.replace('.nd2', '.h5')
-    fixed_image_path = args.fixed_image_path.replace('.nd2', '.h5')
-
-    filename = os.path.basename(input_path) # Name of the output file 
-    dirname = os.path.basename(os.path.dirname(input_path)) # Name of the parent directory to output file
-
-    input_path = os.path.join(args.output_dir, 'affine', dirname, filename) # Path to input file
-    output_path = os.path.join(args.output_dir, 'diffeomorphic', dirname, filename) # Path to output file
-
-    # Get image shape and determine crop areas
-    mov_shape = get_image_file_shape(input_path)
-    fixed_shape = get_image_file_shape(fixed_image_path)
-    padding_shape = get_padding_shape(mov_shape, fixed_shape)
-    crop_areas = get_crop_areas(
-        shape=padding_shape, 
-        crop_width_x=args.crop_width_x, crop_width_y=args.crop_width_y, 
-        overlap_x=args.overlap_x, overlap_y=args.overlap_y
-    )
+    input_path, output_path = make_io_paths(args.input_path, args.output_dir)
 
     # Get checkpoint directories
     current_mappings_dir, current_registered_crops_dir, _ = create_checkpoint_dirs(
@@ -88,17 +88,8 @@ def main(args):
             os.makedirs(output_dir_path)
             logger.debug(f'Output directory created successfully: {output_dir_path}')
 
-        # Create intermediate directories for crops and mappings
-        current_crops_dir_fixed = get_crops_dir(fixed_image_path, args.crops_dir_fixed)
-        current_crops_dir_moving = get_crops_dir(input_path, args.crops_dir_moving)
-
-        # Crop images and save them to the crops directories
-        crop_image_channels(input_path, fixed_image_path, current_crops_dir_fixed, 
-                    args.crop_width_x, args.crop_width_y, args.overlap_x, args.overlap_y, which_crop='fixed')
-
-        # Perform diffeomorphic registration
-        diffeomorphic_registration(current_crops_dir_fixed, current_crops_dir_moving, current_mappings_dir, current_registered_crops_dir, args.max_workers)
-
+        # Compute mappings
+        compute_mappings(args.crops_path, current_mappings_dir)
 
 if __name__ == "__main__":
     # Set up argument parser for command-line usage
@@ -107,28 +98,12 @@ if __name__ == "__main__":
                         help='Path to the input (moving) image.')
     parser.add_argument('--output-dir', type=str, required=True, 
                         help='Path to save the registered image.')
-    parser.add_argument('--fixed-image-path', type=str, required=True, 
-                        help='Path to the fixed image used for registration.')
-    parser.add_argument('--crops-dir-fixed', type=str, required=True,
-                        help='Directory where image crops will be saved.')
-    parser.add_argument('--crops-dir-moving', type=str, required=True,
-                        help='Directory where image crops will be saved.')
+    parser.add_argument('--crops-path', type=str, required=True, 
+                        help='Path to pickle file containing the tuple (index, fixed crop, moving crop).')
     parser.add_argument('--mappings-dir', type=str, required=True, 
                         help='Root directory to save computed mappings.')
     parser.add_argument('--registered-crops-dir', type=str, required=True, 
                         help='Root directory to save registered crops.')
-    parser.add_argument('--crop-width-x', required=True, type=int, 
-                        help='Width of each crop.')
-    parser.add_argument('--crop-width-y', required=True, type=int, 
-                        help='Height of each crop.')
-    parser.add_argument('--overlap-x', type=int, 
-                        help='Overlap of each crop along the x-axis.')
-    parser.add_argument('--overlap-y', type=int, 
-                        help='Overlap of each crop along the y-axis.')
-    parser.add_argument('--max-workers', type=int,
-                        help='Maximum number of CPUs used for parallel processing.')
-    parser.add_argument('--delete-checkpoints', action='store_false', 
-                        help='Delete intermediate files after processing.')
     parser.add_argument('--logs-dir', type=str, required=True, 
                         help='Path to the directory where log files will be stored.')
     

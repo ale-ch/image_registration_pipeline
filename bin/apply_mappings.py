@@ -25,9 +25,8 @@ def process_crop(mapping_file, moving_file, checkpoint_dir=None):
         moving_file (list): Path to moving crop file.
         checkpoint_dir (str): Directory to save/load checkpoint files.
     """
-    pattern = re.compile(r'(\d+_\d+_\d+)\.pkl$')
-    match = pattern.search(mapping_file)
-    idx = "_".join(match.group(0).split('_')[:-1]) # Get the first two indices
+    match = re.search(r'\d+_\d+_\d+', moving_file)
+    idx = match.group(0)
 
     checkpoint_path = os.path.join(checkpoint_dir, f'registered_split_{idx}.pkl')
     if not os.path.exists(checkpoint_path):
@@ -36,16 +35,16 @@ def process_crop(mapping_file, moving_file, checkpoint_dir=None):
 
         # Check for single valued array (such as white border)
         if not len(np.unique(moving_crop[1])) == 1:
-        # Apply mappings
+            # Apply mappings
             save_pickle((moving_crop[0], apply_mapping(mapping, moving_crop[1], method='dipy')), checkpoint_path)
         else:
-        # Return crop as is
-            save_pickle(moving_crop[0], moving_crop[1])
+            # Return crop as is
+            save_pickle(moving_crop[0], checkpoint_path)
 
-        print(f"Saved checkpoint for i={moving_crop[0]}")
-        
-        del moving_crop, mapping
-        gc.collect()        
+    logger.info(f"Saved checkpoint for i={moving_crop[0]}")
+    
+    del moving_crop, mapping
+    gc.collect()        
 
 def apply_mappings(mapping_files, moving_files, checkpoint_dir, max_workers=None):
     """
@@ -93,6 +92,7 @@ def main(args):
     n_channels = 3
     mapping_files = sorted([os.path.join(current_mappings_dir, file) for file in os.listdir(current_mappings_dir)] * n_channels)
     moving_files = sorted([os.path.join(current_crops_dir_moving, file) for file in os.listdir(current_crops_dir_moving)])
+
     apply_mappings(mapping_files, moving_files, current_registered_crops_dir, args.max_workers)
 
 if __name__ == "__main__":

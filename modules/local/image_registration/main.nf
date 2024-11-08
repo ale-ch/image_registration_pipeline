@@ -5,11 +5,6 @@
 process affine_registration {
     cpus 2
     memory "40G"
-    // cpus 32
-    // memory "170G"
-    // errorStrategy 'retry'
-    // maxRetries = 1
-    // memory { 80.GB * task.attempt }
     publishDir "${params.registered_crops_dir}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "registration_1"
@@ -48,11 +43,6 @@ process affine_registration {
 process diffeomorphic_registration {
     cpus 2
     memory "5G"
-    // cpus 32
-    // memory "170G"
-    // errorStrategy 'retry'
-    // maxRetries = 1
-    // memory { 80.GB * task.attempt }
     publishDir "${params.mappings_dir}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "registration_2"
@@ -90,11 +80,6 @@ process diffeomorphic_registration {
 process apply_mappings {
     cpus 20
     memory "40G"
-    // cpus 32
-    // memory "170G"
-    // errorStrategy 'retry'
-    // maxRetries = 1
-    // memory { 80.GB * task.attempt }
     publishDir "${params.registered_crops_dir}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "apply"
@@ -105,7 +90,6 @@ process apply_mappings {
         val(fixed_image_path),
         val(input_path),
         val(output_path)
-        //, path(mapping_file)
     
     output:
     tuple val(patient_id),

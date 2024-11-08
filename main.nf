@@ -19,6 +19,7 @@ include { export_image_2 } from './modules/local/export_image/main.nf'
 include { stack_dapi_crops } from './modules/local/image_stacking/main.nf'
 // include { stack_images } from './modules/local/image_stacking/main.nf'
 
+
 workflow {
 
     /*
@@ -74,9 +75,17 @@ workflow {
             .flatMap { it }
 
     diffeomorphic_registration(crops_data)
-    
-    apply_mappings(diffeomorphic_registration.out)
-    // export_image_2(apply_mappings.out)
+
+    unique_diffeo_out = diffeomorphic_registration.out
+        .toList()
+        .map { tuples ->
+            tuples.unique() 
+        }
+        .flatMap()
+
+    apply_mappings(unique_diffeo_out)
+
+    export_image_2(apply_mappings.out)
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

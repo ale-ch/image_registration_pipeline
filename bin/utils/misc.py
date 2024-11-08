@@ -73,7 +73,6 @@ def create_checkpoint_dirs(root_mappings_dir=None, root_registered_crops_dir=Non
 
     # Initialize registered crops directories
     if root_registered_crops_dir is not None:
-
         current_registered_crops_dir = os.path.join(root_registered_crops_dir, transformation, image_dirname, filename)
         current_registered_crops_no_overlap_dir = os.path.join(root_registered_crops_dir, transformation, 'no_overlap', image_dirname, filename)
         if makedirs:

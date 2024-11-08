@@ -3,9 +3,6 @@ process export_image_1 {
     // memory "5G"
     cpus 20
     memory "100G"
-    // errorStrategy 'retry'
-    // maxRetries = 1
-    // memory { 80.GB * task.attempt }
     publishDir "${params.output_dir_reg}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "export_affine"
@@ -47,9 +44,6 @@ process export_image_2 {
     // memory "5G"
     cpus 20
     memory "100G"
-    // errorStrategy 'retry'
-    // maxRetries = 1
-    // memory { 80.GB * task.attempt }
     publishDir "${params.output_dir_reg}", mode: "copy"
     // container "docker://tuoprofilo/toolname:versione"
     tag "export_diffeo"

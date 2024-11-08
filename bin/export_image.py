@@ -20,20 +20,23 @@ def export_image(input_path, output_dir, fixed_image_path, overlap_x, overlap_y,
     file_output_dir = os.path.join(output_dir, transformation, dirname) # Path to parent directory of the output file
     output_path = os.path.join(file_output_dir, filename) # Path to output file
 
-    if not os.path.exists(file_output_dir):
-        os.makedirs(file_output_dir)
-        logger.debug(f'Output directory created successfully: {file_output_dir}')
+    os.makedirs(file_output_dir, exist_ok=True)
+    logger.debug(f'Output directory created successfully: {file_output_dir}')
 
-    mov_shape = get_image_file_shape(input_path)  # Shape of moving image
-    fixed_shape = get_image_file_shape(fixed_image_path)  # Shape of fixed image
-    shape = get_padding_shape(mov_shape, fixed_shape)  # Calculate padding shape
-    # Remove overlap from crops
-    positions = remove_crops_overlap(registered_crops_dir, registered_crops_no_overlap_dir, 
-                                    overlap_x, overlap_y, max_workers)
-    # Stitch crops and export image
-    stitched_image = stitch_crops(registered_crops_no_overlap_dir, shape, positions, max_workers)
-    save_h5(stitched_image, output_path)
-    logger.info(f'Image {input_path} processed successfully.')
+    if not os.path.exists(output_path):
+        mov_shape = get_image_file_shape(input_path)  # Shape of moving image
+        fixed_shape = get_image_file_shape(fixed_image_path)  # Shape of fixed image
+        shape = get_padding_shape(mov_shape, fixed_shape)  # Calculate padding shape
+        # Remove overlap from crops
+
+        logger.debug(f'CURRENT REGISTERED CROPS DIR: {registered_crops_dir}')
+        logger.debug(f'CURRENT REGISTERED CROPS DIR - NO OVERLAP:{registered_crops_no_overlap_dir}')
+
+        positions = remove_crops_overlap(registered_crops_dir, registered_crops_no_overlap_dir, overlap_x, overlap_y, max_workers)
+        # Stitch crops and export image
+        stitched_image = stitch_crops(registered_crops_no_overlap_dir, shape, positions, max_workers)
+        save_h5(stitched_image, output_path)
+        logger.info(f'Image {input_path} processed successfully.')
 
 def main(args):
     handler = logging.FileHandler(os.path.join(args.logs_dir, 'image_registration.log'))
@@ -57,6 +60,8 @@ def main(args):
             moving_image_path=input_path,
             transformation=args.transformation
         )
+
+        
     
         # Export image      
         export_image(input_path, args.output_dir, fixed_image_path, args.overlap_x, args.overlap_y, args.max_workers,
